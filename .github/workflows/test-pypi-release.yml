@@ -3,90 +3,131 @@ name: Test PyPI Release
 on:
   workflow_dispatch:
     inputs:
-      version_bump:
-        description: 'Version bump type'
+      version:
+        description: 'Version to release (e.g., 0.1.0b1)'
         required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - prepatch
-          - preminor
-          - premajor
+        type: string
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
-  prepare-release:
-    name: Prepare Release
+  validate:
+    name: Validate Release
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-
+    
     steps:
     - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-
+    
+    - name: Validate version format
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(b[0-9]+)?$ ]]; then
+          echo "Error: Invalid version format. Use semantic versioning (e.g., 0.1.0 or 0.1.0b1)"
+          exit 1
+        fi
+        
+  build-for-testpypi:
+    name: Build for Test PyPI
+    needs: validate
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-
-    - name: Get current version
-      id: version
+        
+    - name: Install build tools
       run: |
-        CURRENT_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
-        echo "Current version: $CURRENT_VERSION"
-        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
+        python -m pip install --upgrade pip
+        pip install build twine
+        
     - name: Update version
       run: |
-        python scripts/bump-version.py ${{ github.event.inputs.version_bump }}
-        NEW_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
-        echo "New version: $NEW_VERSION"
-
-  test-and-build:
-    name: Test and Build
-    needs: prepare-release
-    uses: ./.github/workflows/ci.yml
-
-  publish-test-pypi:
+        VERSION="${{ github.event.inputs.version }}"
+        sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+        echo "Updated version to $VERSION"
+        
+    - name: Prepare for Test PyPI (remove local dependencies)
+      run: |
+        python - << 'SCRIPT'
+        import re
+        with open('pyproject.toml', 'r') as f:
+            content = f.read()
+        # Remove tool.uv.sources
+        content = re.sub(r'\[tool\.uv\.sources\].*?(?=\[|$)', '', content, flags=re.DOTALL)
+        # Add notice about missing dependencies
+        content = re.sub(
+            r'(description = "[^"]*")',
+            r'\1\n# NOTE: Requires bedrock-agentcore, boto3, and botocore wheels installed separately',
+            content
+        )
+        with open('pyproject.toml', 'w') as f:
+            f.write(content)
+        SCRIPT
+        
+    - name: Build distribution
+      run: python -m build
+      
+    - name: Check distribution
+      run: |
+        twine check dist/*
+        ls -la dist/
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: testpypi-dist
+        path: dist/
+        
+  publish-testpypi:
     name: Publish to Test PyPI
-    needs: [prepare-release, test-and-build]
+    needs: build-for-testpypi
     runs-on: ubuntu-latest
     environment:
       name: testpypi
       url: https://test.pypi.org/p/bedrock-agentcore-starter-toolkit
-
+    
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v4
       with:
-        name: dist-packages
+        name: testpypi-dist
         path: dist/
-
+        
     - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         skip-existing: true
-
-    - name: Wait for package availability
-      run: sleep 60
-
-    - name: Test installation from Test PyPI
+        
+    - name: Create installation instructions
       run: |
-        python -m venv test-install
-        source test-install/bin/activate
-        pip install --index-url https://test.pypi.org/simple/ \
-                    --extra-index-url https://pypi.org/simple/ \
-                    bedrock-agentcore-starter-toolkit==${{ needs.prepare-release.outputs.version }}
-        python -c "from bedrock_agentcore_starter_toolkit import Runtime; print('✓ Test PyPI install successful')"
-        agentcore --version
+        VERSION="${{ github.event.inputs.version }}"
+        cat > test-pypi-instructions.md << INSTRUCTIONS
+        # Test PyPI Installation Instructions
+        
+        Package published: bedrock-agentcore-starter-toolkit==$VERSION
+        
+        ## Installation Steps:
+        
+        1. First install the private dependencies from wheelhouse:
+           \`\`\`bash
+           pip install ./wheelhouse/botocore-*.whl
+           pip install ./wheelhouse/boto3-*.whl
+           pip install ./wheelhouse/bedrock_agentcore-*.whl
+           \`\`\`
+        
+        2. Then install from Test PyPI:
+           \`\`\`bash
+           pip install -i https://test.pypi.org/simple/ bedrock-agentcore-starter-toolkit==$VERSION
+           \`\`\`
+        
+        Note: Direct installation will fail due to missing dependencies.
+        INSTRUCTIONS
+        
+        echo "::notice file=test-pypi-instructions.md::Test PyPI installation instructions created"
