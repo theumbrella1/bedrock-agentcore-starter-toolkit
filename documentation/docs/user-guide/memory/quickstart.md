@@ -84,7 +84,7 @@ conversations = client.list_events(
 )
 ```
 
-## Create a Memory with Long-term Memory
+## Long-term Memory
 
 ### Create Memory with Long-term Memory
 
@@ -96,7 +96,7 @@ With long-term memory, you can extract and store information from conversations 
 
 - **Session Summaries (SummaryMemoryStrategy)**: Creates condensed representations of interaction content and outcomes. These summaries provide quick reference points for past activities and help optimize context window usage for future interactions.
 
-To create a memory resource with long-term memory, use the create_memory_and_wait method with a strategy. Long-term memory takes 2-3 minutes to become ACTIVE:
+To create a memory resource with long-term memory, use the create_memory_and_wait method with a strategy. When you add a memory strategy for the first time to a memory resource (either on create or update), it may take 2-3 minutes for it to become ACTIVE:
 
 ```python
 memory = client.create_memory_and_wait(
@@ -106,7 +106,7 @@ memory = client.create_memory_and_wait(
             # Name of the extraction model/strategy
             "name": "SessionSummarizer",
             # Organize facts by session ID for easy retrieval
-            # Example: "summaries/session123" contains summary of session123
+            # Example: "summaries/User84/session123" contains summary of session123
             "namespaces": ["/summaries/{actorId}/{sessionId}"]
         }
     }]
