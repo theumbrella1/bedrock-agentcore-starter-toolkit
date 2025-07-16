@@ -38,7 +38,8 @@ production_agent.run()  # Ready to run on Bedrock AgentCore
 ```
 
 **What you get with Bedrock AgentCore:**
-- ✅ **Keep your agent logic** - Works with LangGraph, CrewAI, Autogen, custom frameworks.
+
+- ✅ **Keep your agent logic** - Works with Strands, LangGraph, CrewAI, Autogen, custom frameworks.
 - ✅ **Zero infrastructure management** - No servers, containers, or scaling concerns.
 - ✅ **Enterprise-grade platform** - Built-in auth, memory, observability, security.
 - ✅ **Production-ready deployment** - Reliable, scalable, compliant hosting.
