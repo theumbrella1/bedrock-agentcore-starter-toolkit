@@ -138,7 +138,7 @@ class TestBedrockAgentCoreGatewayCLI:
                 gateway=expected_gateway,
                 name="TestTarget",
                 target_type="lambda",
-                target_payload=None,
+                target_payload="",
                 credentials="",  # empty credentials
             )
 
@@ -193,7 +193,7 @@ class TestBedrockAgentCoreGatewayCLI:
                 gateway=expected_gateway,
                 name=None,  # name not provided
                 target_type="openApiSchema",
-                target_payload=json.dumps(openapi_payload),
+                target_payload=openapi_payload,
                 credentials=credentials,  # parsed JSON
             )
 
@@ -237,7 +237,7 @@ class TestBedrockAgentCoreGatewayCLI:
                 gateway=expected_gateway,
                 name=None,  # default
                 target_type=None,  # default
-                target_payload=None,  # default
+                target_payload="",  # default
                 credentials="",  # empty credentials
             )
 
