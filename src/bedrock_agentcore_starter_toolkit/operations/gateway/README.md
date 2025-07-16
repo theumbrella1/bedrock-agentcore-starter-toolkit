@@ -69,7 +69,7 @@ The CLI automatically:
 For programmatic access in scripts, notebooks, or CI/CD:
 
 ```python
-from bedrock_agentcore.gateway import GatewayClient
+from bedrock_agentcore_starter_toolkit.operations.gateway.client import GatewayClient
 import json
 
 # Initialize client
@@ -78,17 +78,24 @@ client = GatewayClient(region_name='us-west-2')
 # EZ Auth - automatically sets up Cognito OAuth
 cognito_result = client.create_oauth_authorizer_with_cognito("my-gateway")
 
-# Create Gateway with Lambda target
-gateway = client.create_gateway(
+# Create Gateway with OpenAPI schema target
+gateway = client.create_mcp_gateway(
     name="my-gateway",
     roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
-    protocolType="MCP",
-    authorizerType="CUSTOM_JWT",
-    authorizerConfiguration={
-        "customJWTAuthorizer" : {
-            "allowedClients" : [ "clientId" ],
-            "discoveryUrl" : "https://cognito-idp.us-west-2.amazonaws.com/mydomain/.well-known/openid-configuration"
-        }
+    authorizer_config=cognito_result['authorizer_config']
+)
+
+target = client.create_mcp_gateway_target(
+    gateway=gateway,
+    name="sample_target",
+    target_type='openApiSchema',
+    target_payload= {
+        "s3": "s3://openapischemas/sample-openapi-schema.json"
+    },
+    credentials={
+        "api_key": "abc123",
+        "credential_location": "HEADER",
+        "credential_parameter_name": "Authorization"
     }
 )
 print(f"MCP Endpoint: {gateway.get_mcp_url()}")
@@ -111,21 +118,11 @@ cognito_result = client.create_oauth_authorizer_with_cognito("my-gateway")
 ### Semantic Search
 Enable intelligent tool discovery:
 ```python
-gateway = client.create_gateway(
+gateway = client.create_mcp_gateway(
     name="my-gateway",
     roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
-    protocolType="MCP",
-    authorizerType="CUSTOM_JWT",
-    authorizerConfiguration={
-        "customJWTAuthorizer" : {
-            "allowedClients" : [ "clientId" ],
-            "discoveryUrl" : "https://cognito-idp.us-west-2.amazonaws.com/mydomain/.well-known/openid-configuration"
-        }
-    },
-    # Enable semantic search (default: True)
-    protocolConfiguration={
-        "mcp" : {"searchType" : "SEMANTIC"}
-    }
+    authorizer_config=cognito_result['authorizer_config'],
+    enable_semantic_search=True 
 )
 ```
 
@@ -134,39 +131,18 @@ gateway = client.create_gateway(
 #### Lambda Functions
 ```python
 # Auto-generated schema (default)
-gateway = client.create_gateway(
+gateway = client.create_mcp_gateway(
     name="my-gateway",
     roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
-    protocolType="MCP",
-    authorizerType="CUSTOM_JWT",
-    authorizerConfiguration={
-        "customJWTAuthorizer" : {
-            "allowedClients" : [ "clientId" ],
-            "discoveryUrl" : "https://cognito-idp.us-west-2.amazonaws.com/mydomain/.well-known/openid-configuration"
-        }
-    }
+    authorizer_config=cognito_result['authorizer_config']
 )
+
 # Create a lambda target
-lambda_target = client.create_gateway_target(
+lambda_target = client.create_mcp_gateway_target(
     name="my-gateway",
-    gatewayIdentifier="gatewayIdentifier",
-    description="description",
-    credentialProviderConfigurations= [{
-      "credentialProviderType": "GATEWAY_IAM_ROLE"
-    }],
-    targetConfiguration= {
-      "mcp": {
-        "lambda": {
-          "lambdaArn": "arn:aws:lambda:us-west-2:123:function:MyFunction",
-          "toolSchema": {
-              "s3": {
-                  "uri": "s3>//mybucket/spec.json",
-                  "bucketOwnerAccountId": "accountId"
-              }
-          }
-        }
-      }
-    }
+    gateway=gateway,
+    target_type='lambda',
+    description="description"
 )
 ```
 
@@ -186,21 +162,32 @@ openapi_spec = {
         }
     }
 }
+openAPI_inline_target = client.create_mcp_gateway_target(
+    name="my-gateway",
+    gateway=gateway,
+    description="description",
+    credentials={
+        "api_key": "abc123",
+        "credential_location": "HEADER",
+        "credential_parameter_name": "Authorization"
+    },
+    target_payload= {
+        "inlinePayload": openapi_spec
+    }
+)
 
 # From S3
-openAPI_target = client.create_gateway_target(
+openAPI_target = client.create_mcp_gateway_target(
     name="my-gateway",
-    gatewayIdentifier="gatewayIdentifier",
+    gateway=gateway,
     description="description",
-    credentialProviderConfigurations= [{
-      "credentialProviderType": "GATEWAY_IAM_ROLE"
-    }],
-    targetConfiguration= {
-      "mcp": {
-        "openApiSchema": {
-          "s3": "s3>//mybucket/spec.json"
-        }
-      }
+    credentials={
+        "api_key": "abc123",
+        "credential_location": "HEADER",
+        "credential_parameter_name": "Authorization"
+    },
+    target_payload= {
+        "s3": "s3://094562010117-openapischema/sample-web-service.json"
     }
 )
 ```
@@ -261,14 +248,9 @@ See `tests/bedrock_agentcore/gateway/` for integration tests covering all target
 ### GatewayClient
 
 - `create_oauth_authorizer_with_cognito(gateway_name)` - Set up Cognito OAuth automatically
-- `setup_gateway(...)` - Create gateway with target in one call
+- `create_mcp_gateway(...)` - Create a gateway
+- `create_mcp_gateway_target(...)` - Create a gateway target
 - `get_test_token_for_cognito(client_info)` - Get OAuth token for testing
-
-### Gateway Resource
-
-- `id` - Gateway identifier
-- `get_mcp_url()` - Get the MCP endpoint URL
-- `wait_until_ready()` - Wait for gateway to be ready
 
 ### List of all builtin schemas
 ```doc
