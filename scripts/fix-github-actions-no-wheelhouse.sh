@@ -34,33 +34,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-        
+
     - name: Create virtual environment
       run: uv venv
-      
+
     - name: Install linting tools only
       run: |
         source .venv/bin/activate
         pip install pre-commit ruff mypy
-        
+
     - name: Run ruff
       run: |
         source .venv/bin/activate
         ruff check src/
-        
+
     - name: Run ruff format check
       run: |
         source .venv/bin/activate
         ruff format --check src/
-        
+
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
@@ -68,21 +68,21 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-      
+
     - name: Create virtual environment
       run: uv venv --python ${{ matrix.python-version }}
-      
+
     - name: Install package without bedrock dependencies
       run: |
         source .venv/bin/activate
@@ -101,16 +101,16 @@ jobs:
         with open('pyproject.toml', 'w') as f:
             f.write(content)
         SCRIPT
-        
+
         # Install the package
         pip install -e .
-        
+
         # Install test dependencies
         pip install pytest pytest-cov pytest-asyncio pytest-mock
-        
+
         # Restore original pyproject.toml
         mv pyproject.toml.original pyproject.toml
-        
+
     - name: Create mock module for bedrock_agentcore
       run: |
         mkdir -p .venv/lib/python${{ matrix.python-version }}/site-packages/bedrock_agentcore
@@ -125,54 +125,54 @@ jobs:
             def run(self):
                 pass
         MOCK
-        
+
     - name: Run tests with mocked dependencies
       run: |
         source .venv/bin/activate
         # Set environment variable to indicate we're in CI without bedrock deps
         export BEDROCK_AGENTCORE_MOCK_MODE=true
-        
+
         # Run tests, skipping integration tests
         pytest tests/ \
           -v \
           --ignore=tests_integ/ \
           -m "not requires_bedrock_agentcore" \
           || echo "::warning::Some tests skipped due to missing bedrock_agentcore dependency"
-          
+
     - name: Check CLI can be imported
       run: |
         source .venv/bin/activate
         python -c "from bedrock_agentcore_starter_toolkit.cli.cli import main; print('CLI import successful')"
-        
+
   build:
     name: Build Package
     runs-on: ubuntu-latest
     needs: [lint, test]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine wheel
-        
+
     - name: Create release pyproject.toml (no wheelhouse)
       run: |
         cp pyproject.toml pyproject.toml.original
         python scripts/prepare-release.py
-        
+
     - name: Build package
       run: python -m build
-      
+
     - name: Restore original pyproject.toml
       run: mv pyproject.toml.original pyproject.toml
-        
+
     - name: Check package
       run: |
         twine check dist/*
@@ -180,13 +180,13 @@ jobs:
         python -m zipfile -l dist/*.whl | head -20
         echo "=== Verifying no wheelhouse ==="
         python -m zipfile -l dist/*.whl | grep -i wheelhouse && exit 1 || echo "✓ No wheelhouse in package"
-        
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Display installation notes
       run: |
         echo "::notice::Package built successfully. Note: This package requires bedrock-agentcore, boto3, and botocore which are not included."
@@ -211,7 +211,7 @@ if os.environ.get("BEDROCK_AGENTCORE_MOCK_MODE") == "true":
     # Create mock bedrock_agentcore module
     sys.modules['bedrock_agentcore'] = Mock()
     sys.modules['bedrock_agentcore'].BedrockAgentCoreApp = Mock
-    
+
     # Create mock boto3
     sys.modules['boto3'] = Mock()
     sys.modules['botocore'] = Mock()
@@ -239,10 +239,10 @@ jobs:
   validate:
     name: Validate Release
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Validate version format
       run: |
         VERSION="${{ github.event.inputs.version }}"
@@ -250,31 +250,31 @@ jobs:
           echo "Error: Invalid version format. Use semantic versioning (e.g., 0.1.0 or 0.1.0b1)"
           exit 1
         fi
-        
+
   build-for-testpypi:
     name: Build for Test PyPI
     needs: validate
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine
-        
+
     - name: Update version
       run: |
         VERSION="${{ github.event.inputs.version }}"
         sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
         echo "Updated version to $VERSION"
-        
+
     - name: Prepare for Test PyPI (remove local dependencies)
       run: |
         python - << 'SCRIPT'
@@ -292,21 +292,21 @@ jobs:
         with open('pyproject.toml', 'w') as f:
             f.write(content)
         SCRIPT
-        
+
     - name: Build distribution
       run: python -m build
-      
+
     - name: Check distribution
       run: |
         twine check dist/*
         ls -la dist/
-        
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: testpypi-dist
         path: dist/
-        
+
   publish-testpypi:
     name: Publish to Test PyPI
     needs: build-for-testpypi
@@ -314,45 +314,45 @@ jobs:
     environment:
       name: testpypi
       url: https://test.pypi.org/p/bedrock-agentcore-starter-toolkit
-    
+
     steps:
     - uses: actions/download-artifact@v4
       with:
         name: testpypi-dist
         path: dist/
-        
+
     - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         skip-existing: true
-        
+
     - name: Create installation instructions
       run: |
         VERSION="${{ github.event.inputs.version }}"
         cat > test-pypi-instructions.md << INSTRUCTIONS
         # Test PyPI Installation Instructions
-        
+
         Package published: bedrock-agentcore-starter-toolkit==$VERSION
-        
+
         ## Installation Steps:
-        
+
         1. First install the private dependencies from wheelhouse:
            \`\`\`bash
            pip install ./wheelhouse/botocore-*.whl
            pip install ./wheelhouse/boto3-*.whl
            pip install ./wheelhouse/bedrock_agentcore-*.whl
            \`\`\`
-        
+
         2. Then install from Test PyPI:
            \`\`\`bash
            pip install -i https://test.pypi.org/simple/ bedrock-agentcore-starter-toolkit==$VERSION
            \`\`\`
-        
+
         Note: Direct installation will fail due to missing dependencies.
         INSTRUCTIONS
-        
+
         echo "::notice file=test-pypi-instructions.md::Test PyPI installation instructions created"
 EOF
 
@@ -408,45 +408,45 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install Bandit
       run: |
         python -m pip install --upgrade pip
         pip install bandit[toml]
-      
+
     - name: Run Bandit
       run: |
         bandit -r src/ -f json -o bandit-results.json
-        
+
     - name: Upload Bandit results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: bandit-results
         path: bandit-results.json
-        
+
   safety:
     name: Safety Dependency Check
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install safety
       run: |
         python -m pip install --upgrade pip
         pip install safety
-      
+
     - name: Create requirements without private deps
       run: |
         # Extract dependencies excluding private ones
@@ -467,11 +467,11 @@ jobs:
             with open('requirements-public.txt', 'w') as f:
                 f.write('\n'.join(packages))
         SCRIPT
-        
+
     - name: Run safety check
       run: |
         safety check -r requirements-public.txt --json > safety-results.json || echo "Safety check completed"
-        
+
     - name: Upload safety results
       uses: actions/upload-artifact@v4
       if: always()

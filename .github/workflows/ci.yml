@@ -15,33 +15,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-        
+
     - name: Create virtual environment
       run: uv venv
-      
+
     - name: Install linting tools only
       run: |
         source .venv/bin/activate
         pip install pre-commit ruff mypy
-        
+
     - name: Run ruff
       run: |
         source .venv/bin/activate
         ruff check src/
-        
+
     - name: Run ruff format check
       run: |
         source .venv/bin/activate
         ruff format --check src/
-        
+
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
@@ -49,21 +49,21 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-      
+
     - name: Create virtual environment
       run: uv venv --python ${{ matrix.python-version }}
-      
+
     - name: Install package without bedrock dependencies
       run: |
         source .venv/bin/activate
@@ -82,16 +82,16 @@ jobs:
         with open('pyproject.toml', 'w') as f:
             f.write(content)
         SCRIPT
-        
+
         # Install the package
         pip install -e .
-        
+
         # Install test dependencies
         pip install pytest pytest-cov pytest-asyncio pytest-mock
-        
+
         # Restore original pyproject.toml
         mv pyproject.toml.original pyproject.toml
-        
+
     - name: Create mock module for bedrock_agentcore
       run: |
         mkdir -p .venv/lib/python${{ matrix.python-version }}/site-packages/bedrock_agentcore
@@ -106,54 +106,54 @@ jobs:
             def run(self):
                 pass
         MOCK
-        
+
     - name: Run tests with mocked dependencies
       run: |
         source .venv/bin/activate
         # Set environment variable to indicate we're in CI without bedrock deps
         export BEDROCK_AGENTCORE_MOCK_MODE=true
-        
+
         # Run tests, skipping integration tests
         pytest tests/ \
           -v \
           --ignore=tests_integ/ \
           -m "not requires_bedrock_agentcore" \
           || echo "::warning::Some tests skipped due to missing bedrock_agentcore dependency"
-          
+
     - name: Check CLI can be imported
       run: |
         source .venv/bin/activate
         python -c "from bedrock_agentcore_starter_toolkit.cli.cli import main; print('CLI import successful')"
-        
+
   build:
     name: Build Package
     runs-on: ubuntu-latest
     needs: [lint, test]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine wheel
-        
+
     - name: Create release pyproject.toml (no wheelhouse)
       run: |
         cp pyproject.toml pyproject.toml.original
         python scripts/prepare-release.py
-        
+
     - name: Build package
       run: python -m build
-      
+
     - name: Restore original pyproject.toml
       run: mv pyproject.toml.original pyproject.toml
-        
+
     - name: Check package
       run: |
         twine check dist/*
@@ -161,13 +161,13 @@ jobs:
         python -m zipfile -l dist/*.whl | head -20
         echo "=== Verifying no wheelhouse ==="
         python -m zipfile -l dist/*.whl | grep -i wheelhouse && exit 1 || echo "✓ No wheelhouse in package"
-        
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Display installation notes
       run: |
         echo "::notice::Package built successfully. Note: This package requires bedrock-agentcore, boto3, and botocore which are not included."
