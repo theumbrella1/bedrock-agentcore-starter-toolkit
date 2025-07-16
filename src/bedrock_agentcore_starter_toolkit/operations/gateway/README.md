@@ -81,7 +81,7 @@ cognito_result = client.create_oauth_authorizer_with_cognito("my-gateway")
 # Create Gateway with OpenAPI schema target
 gateway = client.create_mcp_gateway(
     name="my-gateway",
-    roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
+    role_arn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
     authorizer_config=cognito_result['authorizer_config']
 )
 
@@ -90,7 +90,10 @@ target = client.create_mcp_gateway_target(
     name="sample_target",
     target_type='openApiSchema',
     target_payload= {
-        "s3": "s3://openapischemas/sample-openapi-schema.json"
+        "s3": {
+            "uri": "s3://openapischemas/sample-openapi-schema.json",
+            "bucketOwnerAccountId": "012345678912"
+        }
     },
     credentials={
         "api_key": "abc123",
@@ -98,7 +101,7 @@ target = client.create_mcp_gateway_target(
         "credential_parameter_name": "Authorization"
     }
 )
-print(f"MCP Endpoint: {gateway.get_mcp_url()}")
+print(f"MCP Endpoint: {gateway['gatewayUrl']}")
 print(f"OAuth Credentials:")
 print(f"  Client ID: {cognito_result['client_info']['client_id']}")
 print(f"  Client Secret: {cognito_result['client_info']['client_secret']}")
@@ -120,9 +123,9 @@ Enable intelligent tool discovery:
 ```python
 gateway = client.create_mcp_gateway(
     name="my-gateway",
-    roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
+    role_arn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
     authorizer_config=cognito_result['authorizer_config'],
-    enable_semantic_search=True 
+    enable_semantic_search=True # Enable semantic search.
 )
 ```
 
@@ -133,16 +136,15 @@ gateway = client.create_mcp_gateway(
 # Auto-generated schema (default)
 gateway = client.create_mcp_gateway(
     name="my-gateway",
-    roleArn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
+    role_arn="arn:aws:iam::123:role/BedrockAgentCoreGatewayExecutionRole",
     authorizer_config=cognito_result['authorizer_config']
 )
 
 # Create a lambda target
 lambda_target = client.create_mcp_gateway_target(
-    name="my-gateway",
+    name="lambda-target",
     gateway=gateway,
-    target_type='lambda',
-    description="description"
+    target_type='lambda'
 )
 ```
 
@@ -163,14 +165,14 @@ openapi_spec = {
     }
 }
 openAPI_inline_target = client.create_mcp_gateway_target(
-    name="my-gateway",
+    name="inlineTarget",
     gateway=gateway,
-    description="description",
     credentials={
         "api_key": "abc123",
         "credential_location": "HEADER",
         "credential_parameter_name": "Authorization"
     },
+    target_type='openApiSchema',
     target_payload= {
         "inlinePayload": openapi_spec
     }
@@ -178,16 +180,19 @@ openAPI_inline_target = client.create_mcp_gateway_target(
 
 # From S3
 openAPI_target = client.create_mcp_gateway_target(
-    name="my-gateway",
+    name="s3target",
     gateway=gateway,
-    description="description",
     credentials={
         "api_key": "abc123",
         "credential_location": "HEADER",
         "credential_parameter_name": "Authorization"
     },
+    target_type='openApiSchema',
     target_payload= {
-        "s3": "s3://openapischemas/sample-openapi-schema.json"
+        "s3": {
+            "uri": "s3://openapischemas/sample-openapi-schema.json",
+            "bucketOwnerAccountId": "012345678912"
+        }
     }
 )
 ```
@@ -205,7 +210,7 @@ token = client.get_access_token_for_cognito(cognito_result['client_info'])
 # List tools
 async with httpx.AsyncClient() as http:
     response = await http.post(
-        gateway.get_mcp_url(),
+        gateway['gatewayUrl'],
         headers={"Authorization": f"Bearer {token}"},
         json={
             "jsonrpc": "2.0",
@@ -218,7 +223,7 @@ async with httpx.AsyncClient() as http:
 
 # Invoke a tool
 response = await http.post(
-    gateway.get_mcp_url(),
+    gateway['gatewayUrl'],
     headers={"Authorization": f"Bearer {token}"},
     json={
         "jsonrpc": "2.0",
