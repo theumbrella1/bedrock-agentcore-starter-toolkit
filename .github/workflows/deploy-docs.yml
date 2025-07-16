@@ -27,7 +27,7 @@ jobs:
         with:
           repository: aws/bedrock-agentcore-sdk-python
           path: bedrock-agentcore-sdk-python
-          fetch-depth: 1  
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
