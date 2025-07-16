@@ -34,7 +34,7 @@ app = BedrockAgentCoreApp()
 
 @app.entrypoint
 def my_agent(request):
-    # Your existing LangGraph, CrewAI, or custom agent logic
+    # Your existing Strands, LangGraph, CrewAI, or custom agent logic
     return process_with_your_framework(request.get("prompt"))
 
 app.run()
@@ -85,7 +85,7 @@ agentcore invoke '{"prompt": "Hello from Bedrock AgentCore!"}'
 Amazon Bedrock AgentCore enables you to deploy and operate highly effective agents securely, at scale using any framework and model. With AgentCore, developers can accelerate AI agents into production with enterprise-grade scale, reliability, and security. The platform provides:
 
 - **Composable Services**: Mix and match services to fit your needs
-- **Framework Flexibility**: Works with LangGraph, CrewAI, Strands, and more
+- **Framework Flexibility**: Works with Strands, LangGraph, CrewAI, Strands, and more
 - **Any Model Support**: Not locked into specific models
 - **Enterprise Security**: Built-in identity, isolation, and access controls
 
