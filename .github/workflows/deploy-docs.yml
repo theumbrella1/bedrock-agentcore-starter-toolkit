@@ -28,7 +28,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v3
 
       - name: Create virtual environment and install dependencies
         run: |
@@ -36,6 +36,12 @@ jobs:
           source .venv/bin/activate
           uv pip install mkdocs-material mkdocstrings-python pymdown-extensions
           uv pip install mike mkdocs-macros-plugin
+
+          # Install the SDK package from PyPI
+          uv pip install bedrock-agentcore
+
+          # Install the toolkit package in development mode
+          uv pip install -e .
 
       - name: Setup Git for mike versioning
         run: |
