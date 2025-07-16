@@ -118,8 +118,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          # Update these paths to match your actual directory structure
-          paths: ["../src", "../../bedrock-agentcore-sdk-python/src"]
+          paths: ["../src", "../bedrock-agentcore-sdk-python/src"]
           options:
             docstring_style: google
             show_root_heading: true
