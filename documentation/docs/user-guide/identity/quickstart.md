@@ -295,7 +295,7 @@ Example output during the OAuth2 flow:
 ```
 Waiting for authentication...
 Visit the following URL to login:
-https://auth.genesis.run/dev/authorize?provider=google&scopes=drive.file&user_id=user123
+https://bedrock-agentcore.us-west-2.amazonaws.com/identities/oauth2/authorize?request_uri=123456789
 
 Polling for token... (press Ctrl+C to cancel)
 ```
