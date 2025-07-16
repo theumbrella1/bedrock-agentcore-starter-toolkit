@@ -42,7 +42,7 @@ ENV AWS_DEFAULT_REGION={{ aws_region }}
 ENV DOCKER_CONTAINER=1
 
 {% if observability_enabled %}
-RUN python -m pip install aws_opentelemetry_distro_genai_beta>=0.1.2
+RUN python -m pip install aws-opentelemetry-distro>=0.10.0
 {% endif %}
 
 # Create non-root user
