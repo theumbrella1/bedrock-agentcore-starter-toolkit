@@ -44,36 +44,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-        
+
     - name: Create virtual environment
       run: uv venv
-      
+
     - name: Install wheelhouse dependencies
       run: |
         source .venv/bin/activate
         pip install ./wheelhouse/botocore-*.whl
         pip install ./wheelhouse/boto3-*.whl
         pip install ./wheelhouse/bedrock_agentcore-*.whl
-        
+
     - name: Install package with dev dependencies
       run: |
         source .venv/bin/activate
         pip install -e ".[dev]" --no-deps
         pip install pre-commit pytest mypy ruff
-        
+
     - name: Run pre-commit hooks
       run: |
         source .venv/bin/activate
         pre-commit run --all-files
-        
+
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
@@ -81,21 +81,21 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-      
+
     - name: Create virtual environment
       run: uv venv --python ${{ matrix.python-version }}
-      
+
     - name: Install wheelhouse dependencies
       run: |
         source .venv/bin/activate
@@ -103,7 +103,7 @@ jobs:
         pip install ./wheelhouse/botocore-*.whl
         pip install ./wheelhouse/boto3-*.whl
         pip install ./wheelhouse/bedrock_agentcore-*.whl
-        
+
     - name: Install package and test dependencies
       run: |
         source .venv/bin/activate
@@ -113,7 +113,7 @@ jobs:
         pip install pytest pytest-cov pytest-asyncio moto mock requests httpx \
                     jinja2 prompt-toolkit pydantic pyyaml rich toml typer \
                     typing-extensions uvicorn docstring_parser urllib3
-        
+
     - name: Run tests with coverage
       run: |
         source .venv/bin/activate
@@ -125,7 +125,7 @@ jobs:
           --cov-fail-under=80 \
           --cov-branch \
           -v
-          
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       if: matrix.python-version == '3.10'
@@ -135,43 +135,43 @@ jobs:
         name: codecov-${{ matrix.python-version }}
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: false
-        
+
     - name: Upload coverage HTML
       uses: actions/upload-artifact@v4
       if: matrix.python-version == '3.10'
       with:
         name: coverage-html-${{ matrix.python-version }}
         path: htmlcov/
-        
+
   build:
     name: Build Package
     runs-on: ubuntu-latest
     needs: [lint, test]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine wheel
-        
+
     - name: Create release pyproject.toml (no wheelhouse)
       run: |
         cp pyproject.toml pyproject.toml.original
         python scripts/prepare-release.py
-        
+
     - name: Build package
       run: python -m build
-      
+
     - name: Restore original pyproject.toml
       run: mv pyproject.toml.original pyproject.toml
-        
+
     - name: Check package
       run: |
         twine check dist/*
@@ -179,13 +179,13 @@ jobs:
         python -m zipfile -l dist/*.whl | head -20
         echo "=== Verifying no wheelhouse ==="
         python -m zipfile -l dist/*.whl | grep wheelhouse && exit 1 || echo "✓ No wheelhouse in package"
-        
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Test wheel installation
       run: |
         python -m venv test-env
@@ -218,68 +218,68 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-        
+
     - name: Create virtual environment
       run: uv venv
-        
+
     - name: Install Bandit
       run: |
         source .venv/bin/activate
         uv pip install bandit[toml]
-      
+
     - name: Run Bandit
       run: |
         source .venv/bin/activate
         bandit -r src/ -f json -o bandit-results.json
-        
+
     - name: Upload Bandit results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: bandit-results
         path: bandit-results.json
-        
+
   safety:
     name: Safety Dependency Check
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-        
+
     - name: Create virtual environment
       run: uv venv
-        
+
     - name: Install safety
       run: |
         source .venv/bin/activate
         uv pip install safety
-      
+
     - name: Generate requirements
       run: |
         source .venv/bin/activate
         uv pip compile pyproject.toml -o requirements.txt || echo "Failed to compile requirements"
-        
+
     - name: Run safety check
       run: |
         source .venv/bin/activate
         safety check -r requirements.txt --json > safety-results.json || echo "No vulnerabilities found"
-        
+
     - name: Upload safety results
       uses: actions/upload-artifact@v4
       if: always()
@@ -334,35 +334,35 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Get current version
       id: version
       run: |
         CURRENT_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
         echo "Current version: $CURRENT_VERSION"
         echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        
+
     - name: Update version
       run: |
         python scripts/bump-version.py ${{ github.event.inputs.version_bump }}
         NEW_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
         echo "New version: $NEW_VERSION"
-        
+
   test-and-build:
     name: Test and Build
     needs: prepare-release
     uses: ./.github/workflows/ci.yml
-    
+
   publish-test-pypi:
     name: Publish to Test PyPI
     needs: [prepare-release, test-and-build]
@@ -370,26 +370,26 @@ jobs:
     environment:
       name: testpypi
       url: https://test.pypi.org/p/bedrock-agentcore-starter-toolkit
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Publish to Test PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         skip-existing: true
-        
+
     - name: Wait for package availability
       run: sleep 60
-      
+
     - name: Test installation from Test PyPI
       run: |
         python -m venv test-install
@@ -425,12 +425,12 @@ jobs:
     name: Validate Release
     runs-on: ubuntu-latest
     if: |
-      github.event_name == 'push' || 
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_release == 'release')
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Validate version tag
       if: github.event_name == 'push'
       run: |
@@ -440,12 +440,12 @@ jobs:
           echo "Error: Package version ($VERSION) does not match tag ($TAG_VERSION)"
           exit 1
         fi
-        
+
   build-and-test:
     name: Build and Test
     needs: validate-release
     uses: ./.github/workflows/ci.yml
-    
+
   publish-pypi:
     name: Publish to PyPI
     needs: [validate-release, build-and-test]
@@ -453,21 +453,21 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/bedrock-agentcore-starter-toolkit
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-        
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push'
@@ -511,7 +511,7 @@ def bump_version(version, bump_type):
     """Bump version based on type."""
     parts = version.split('.')
     major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2].split('-')[0])
-    
+
     if bump_type == 'major':
         return f"{major + 1}.0.0"
     elif bump_type == 'minor':
@@ -529,18 +529,18 @@ def bump_version(version, bump_type):
 
 if __name__ == "__main__":
     bump_type = sys.argv[1] if len(sys.argv) > 1 else 'patch'
-    
+
     with open('pyproject.toml', 'r') as f:
         content = f.read()
-    
+
     current_version = re.search(r'version = "([^"]+)"', content).group(1)
     new_version = bump_version(current_version, bump_type)
-    
+
     content = re.sub(r'version = "[^"]+"', f'version = "{new_version}"', content)
-    
+
     with open('pyproject.toml', 'w') as f:
         f.write(content)
-    
+
     print(f"Version bumped from {current_version} to {new_version}")
 EOF
 

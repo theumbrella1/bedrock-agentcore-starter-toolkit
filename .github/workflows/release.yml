@@ -20,12 +20,12 @@ jobs:
     name: Validate Release
     runs-on: ubuntu-latest
     if: |
-      github.event_name == 'push' || 
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm_release == 'release')
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Validate version tag
       if: github.event_name == 'push'
       run: |
@@ -35,12 +35,12 @@ jobs:
           echo "Error: Package version ($VERSION) does not match tag ($TAG_VERSION)"
           exit 1
         fi
-        
+
   build-and-test:
     name: Build and Test
     needs: validate-release
     uses: ./.github/workflows/ci.yml
-    
+
   publish-pypi:
     name: Publish to PyPI
     needs: [validate-release, build-and-test]
@@ -48,21 +48,21 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/bedrock-agentcore-starter-toolkit
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: dist-packages
         path: dist/
-        
+
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-        
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push'
