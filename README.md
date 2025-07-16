@@ -11,7 +11,7 @@
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/graphs/commit-activity"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/issues"><img alt="GitHub open issues" src="https://img.shields.io/github/issues/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/pulls"><img alt="GitHub open pull requests" src="https://img.shields.io/github/issues-pr/aws/bedrock-agentcore-starter-toolkit"/></a>
-    <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/aws/bedrock-agentcore-starter-toolkit"/></a>
+    <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/blob/main/LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://pypi.org/project/bedrock-agentcore-starter-toolkit"><img alt="PyPI version" src="https://img.shields.io/pypi/v/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://python.org"><img alt="Python versions" src="https://img.shields.io/pypi/pyversions/bedrock-agentcore-starter-toolkit"/></a>
   </div>
@@ -34,7 +34,7 @@ app = BedrockAgentCoreApp()
 
 @app.entrypoint
 def my_agent(request):
-    # Your existing LangGraph, CrewAI, or custom agent logic
+    # Your existing Strands, LangGraph, CrewAI, or custom agent logic
     return process_with_your_framework(request.get("prompt"))
 
 app.run()
@@ -85,7 +85,7 @@ agentcore invoke '{"prompt": "Hello from Bedrock AgentCore!"}'
 Amazon Bedrock AgentCore enables you to deploy and operate highly effective agents securely, at scale using any framework and model. With AgentCore, developers can accelerate AI agents into production with enterprise-grade scale, reliability, and security. The platform provides:
 
 - **Composable Services**: Mix and match services to fit your needs
-- **Framework Flexibility**: Works with LangGraph, CrewAI, Strands, and more
+- **Framework Flexibility**: Works with Strands, LangGraph, CrewAI, Strands, and more
 - **Any Model Support**: Not locked into specific models
 - **Enterprise Security**: Built-in identity, isolation, and access controls
 

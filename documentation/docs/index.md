@@ -19,8 +19,8 @@ Amazon Bedrock AgentCore is a comprehensive platform for deploying and operating
 
 ```python
 # Your existing agent (any framework)
-from langgraph import StateGraph
-# or CrewAI, Autogen, custom logic - doesn't matter
+from strands import Agent
+# or LangGraph, CrewAI, Autogen, custom logic - doesn't matter
 
 def my_local_agent(query):
     # Your carefully crafted agent logic
@@ -38,6 +38,7 @@ production_agent.run()  # Ready to run on Bedrock AgentCore
 ```
 
 **What you get with Bedrock AgentCore:**
+
 
 - ✅ **Keep your agent logic** - Works with Strands, LangGraph, CrewAI, Autogen, custom frameworks.
 - ✅ **Zero infrastructure management** - No servers, containers, or scaling concerns.
