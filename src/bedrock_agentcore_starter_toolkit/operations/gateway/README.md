@@ -187,7 +187,7 @@ openAPI_target = client.create_mcp_gateway_target(
         "credential_parameter_name": "Authorization"
     },
     target_payload= {
-        "s3": "s3://094562010117-openapischema/sample-web-service.json"
+        "s3": "s3://openapischemas/sample-openapi-schema.json"
     }
 )
 ```
