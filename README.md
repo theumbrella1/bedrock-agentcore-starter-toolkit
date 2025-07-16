@@ -11,7 +11,7 @@
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/graphs/commit-activity"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/issues"><img alt="GitHub open issues" src="https://img.shields.io/github/issues/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/pulls"><img alt="GitHub open pull requests" src="https://img.shields.io/github/issues-pr/aws/bedrock-agentcore-starter-toolkit"/></a>
-    <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/aws/bedrock-agentcore-starter-toolkit"/></a>
+    <a href="https://github.com/aws/bedrock-agentcore-starter-toolkit/blob/main/LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/aws/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://pypi.org/project/bedrock-agentcore-starter-toolkit"><img alt="PyPI version" src="https://img.shields.io/pypi/v/bedrock-agentcore-starter-toolkit"/></a>
     <a href="https://python.org"><img alt="Python versions" src="https://img.shields.io/pypi/pyversions/bedrock-agentcore-starter-toolkit"/></a>
   </div>
