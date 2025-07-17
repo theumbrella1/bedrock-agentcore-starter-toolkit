@@ -23,7 +23,7 @@ The bedrock-agentcore SDK provides a convenient way to create code interpreter s
 from bedrock_agentcore.tools.code_interpreter_client import code_session
 
 # Create a code interpreter session using the context manager
-with code_session("us-west-2") as client:
+with code_session(region) as client:
     # The session is automatically created and managed
     print(f"Code interpreter session created")
 
@@ -41,7 +41,7 @@ If you need more control over the session lifecycle, you can also use the client
 from bedrock_agentcore.tools.code_interpreter_client import CodeInterpreter
 
 # Create a code interpreter client
-client = CodeInterpreter(region_name="us-west-2")
+client = CodeInterpreter(region_name=region)
 
 # Start a code interpreter session
 client.start()
@@ -65,7 +65,7 @@ Use the `invoke` method to execute code in your session:
 ```python
 from bedrock_agentcore.tools.code_interpreter_client import code_session
 
-with code_session("us-west-2") as client:
+with code_session(region) as client:
     # Execute Python code
     code_to_execute = """
 import matplotlib.pyplot as plt
@@ -105,7 +105,7 @@ from strands import Agent, tool
 from bedrock_agentcore.tools.code_interpreter_client import CodeInterpreter
 
 # Global code interpreter client
-code_client = CodeInterpreter("us-west-2")
+code_client = CodeInterpreter(region)
 
 # Validation-focused system prompt
 SYSTEM_PROMPT = """You are an AI assistant that validates answers through code execution.
