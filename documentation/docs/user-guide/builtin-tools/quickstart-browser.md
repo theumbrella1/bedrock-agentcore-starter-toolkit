@@ -23,7 +23,7 @@ The bedrock-agentcore SDK provides a convenient way to create browser sessions:
 from bedrock_agentcore.tools.browser_client import browser_session
 
 # Create a browser session using the context manager
-with browser_session(region) as client:
+with browser_session("us-west-2") as client:
     # The session_id is automatically generated
     print(f"Session ID: {client.session_id}")
 
@@ -42,7 +42,7 @@ For more control over the session lifecycle:
 from bedrock_agentcore.tools.browser_client import BrowserClient
 
 # Create a browser client
-client = BrowserClient(region_name=region)
+client = BrowserClient(region="us-west-2")
 
 # Start a browser session
 client.start()
@@ -83,7 +83,7 @@ console = Console()
 def main():
     try:
         # Step 1: Create browser session
-        with browser_session(region) as client:
+        with browser_session("us-west-2") as client:
             print("\r   ✅ Browser ready!                    ")
             ws_url, headers = client.generate_ws_headers()
 
@@ -150,7 +150,7 @@ def capture_cdp_screenshot(context, page, filename_prefix="screenshot", image_fo
 
 
 def main(playwright: Playwright):
-    with browser_session(region) as client:
+    with browser_session("us-west-2") as client:
         print("📡 Browser session started... waiting for readiness")
 
         ws_url, headers = client.generate_ws_headers()
