@@ -105,7 +105,7 @@ from strands import Agent, tool
 from bedrock_agentcore.tools.code_interpreter_client import CodeInterpreter
 
 # Global code interpreter client
-code_client = CodeInterpreter(region)
+code_client = CodeInterpreter("us-west-2")
 
 # Validation-focused system prompt
 SYSTEM_PROMPT = """You are an AI assistant that validates answers through code execution.
