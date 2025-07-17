@@ -41,7 +41,7 @@ If you need more control over the session lifecycle, you can also use the client
 from bedrock_agentcore.tools.code_interpreter_client import CodeInterpreter
 
 # Create a code interpreter client
-client = CodeInterpreter(region_name="us-west-2")
+client = CodeInterpreter(region="us-west-2")
 
 # Start a code interpreter session
 client.start()

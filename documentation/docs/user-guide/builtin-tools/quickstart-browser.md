@@ -42,7 +42,7 @@ For more control over the session lifecycle:
 from bedrock_agentcore.tools.browser_client import BrowserClient
 
 # Create a browser client
-client = BrowserClient(region_name="us-west-2")
+client = BrowserClient(region="us-west-2")
 
 # Start a browser session
 client.start()
@@ -63,6 +63,11 @@ finally:
 
 ### Example 1: Browser Automation with Nova Act
 
+##### Install dependencies
+
+```bash
+pip install nova-act
+```
 You can build a browser agent using Nova Act to automate web interactions:
 
 ```python
@@ -78,7 +83,7 @@ console = Console()
 def main():
     try:
         # Step 1: Create browser session
-        with browser_session('us-west-2') as client:
+        with browser_session("us-west-2") as client:
             print("\r   ✅ Browser ready!                    ")
             ws_url, headers = client.generate_ws_headers()
 
@@ -107,117 +112,79 @@ if __name__ == "__main__":
     main()
 ```
 
-### Example 2: Browser Tool with Strands Framework
+### Example 2: Using Playwright for Browser Control
 
-You can build an agent that uses the Browser Tool as one of its tools using the Strands framework:
+##### Install dependencies
 
-```python
-import random
-from strands import Agent, tool
-from bedrock_agentcore.tools.browser_client import browser_session
-from nova_act import NovaAct
-from browser_viewer import BrowserViewerServer
-
-# Constants
-NOVA_ACT_API_KEY = "YOUR_NOVA_ACT_API_KEY"
-
-@tool
-def browser_automation_tool(starting_url: str, instr: str) -> str:
-    """
-    Automates browser tasks starting from a given URL based on natural language instructions.
-    Supports parallel execution and can handle moderately complex tasks with some reasoning.
-
-    Args:
-        starting_url (str): The initial URL to open in the browser.
-        instr (str): A natural language instruction describing the task to be automated.
-
-    Returns:
-        str: The result of the action performed in the browser.
-    """
-    with browser_session('us-west-2') as client:
-
-        # Retrieve CDP WebSocket URL and headers for control
-        ws_url, headers = client.generate_ws_headers()
-
-        # Use a random port to avoid conflicts
-        port = random.randint(8000, 9000)
-
-        # Start the browser viewer server (optional GUI)
-        viewer = BrowserViewerServer(client, port=port)
-        viewer_url = viewer.start(open_browser=True)
-        print(f"Viewer started at: {viewer_url}")
-
-        try:
-            with NovaAct(
-                cdp_endpoint_url=ws_url,
-                cdp_headers=headers,
-                preview={"playwright_actuation": True},
-                nova_act_api_key=NOVA_ACT_API_KEY,
-                starting_page=starting_url,
-            ) as nova_act:
-                result = nova_act.act(instr)
-                return result
-
-        except Exception as e:
-            print(f"[ERROR] Failed to perform browser automation: {e}")
-            raise
-
-
-# Initialize the supervisor agent with available tools
-supervisor_agent = Agent(tools=[browser_automation_tool])
-
-if __name__ == "__main__":
-    # Example task for the agent
-    message = """
-    I have the following tasks. Feel free to run them in parallel if it improves performance.
-    If a CAPTCHA is encountered, instruct the browser tool to wait for manual resolution.
-
-    1. Get the top 1 current market gainer and loser from Yahoo Finance.
-    2. Fetch the most recent news about these gainer and loser stocks.
-    3. Generate a short report for both the gainer and the loser.
-    """
-    supervisor_agent(message)
+```bash
+pip install playwright
 ```
-
-### Example 3: Using Playwright for Browser Control
 
 You can use the Playwright automation framework with the Browser Tool:
 
 ```python
+import time
+import base64
+from datetime import datetime
 from playwright.sync_api import sync_playwright, Playwright, BrowserType
 from bedrock_agentcore.tools.browser_client import browser_session
-from browser_viewer import BrowserViewerServer
-import time
 
-def run(playwright: Playwright):
-    # Create the browser session and keep it alive
-    with browser_session('us-west-2') as client:
+def capture_cdp_screenshot(context, page, filename_prefix="screenshot", image_format="jpeg"):
+    """Capture a screenshot using the CDP API and save to file."""
+    cdp_client = context.new_cdp_session(page)
+    screenshot_data = cdp_client.send("Page.captureScreenshot", {
+        "format": image_format,
+        "quality": 80,
+        "captureBeyondViewport": True
+    })
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{filename_prefix}_{timestamp}.{image_format}"
+    image_bytes = base64.b64decode(screenshot_data['data'])
+
+    with open(filename, "wb") as f:
+        f.write(image_bytes)
+
+    print(f"✅ Screenshot saved: {filename}")
+    return filename
+
+
+def main(playwright: Playwright):
+    with browser_session("us-west-2") as client:
+        print("📡 Browser session started... waiting for readiness")
+
         ws_url, headers = client.generate_ws_headers()
-
-        # Start viewer server
-        viewer = BrowserViewerServer(client, port=8005)
-        viewer_url = viewer.start(open_browser=True)
-
-        # Connect using headers
         chromium: BrowserType = playwright.chromium
-        browser = chromium.connect_over_cdp(
-            ws_url,
-            headers=headers
-        )
-
-        context = browser.contexts[0]
-        page = context.pages[0]
+        browser = chromium.connect_over_cdp(ws_url, headers=headers)
 
         try:
-            page.goto("https://amazon.com/")
-            print(page.title())
-            time.sleep(120)
+            context = browser.contexts[0] if browser.contexts else browser.new_context()
+            page = context.pages[0] if context.pages else context.new_page()
+
+            # Step 1: Navigate to Amazon
+            print("🌐 Navigating to Amazon...")
+            page.goto("https://www.amazon.com", wait_until="domcontentloaded")
+            time.sleep(2)
+            capture_cdp_screenshot(context, page, "amazon_home")
+
+            # Step 2: Search for "coffee maker"
+            print("🔎 Searching for 'coffee maker'...")
+            page.fill("input#twotabsearchtextbox", "coffee maker")
+            page.keyboard.press("Enter")
+            page.wait_for_selector(".s-result-item", timeout=10000)
+            time.sleep(2)
+            capture_cdp_screenshot(context, page, "coffee_maker_results")
+
         finally:
-            page.close()
+            print("🔒 Closing browser session...")
+            if not page.is_closed():
+                page.close()
             browser.close()
 
-with sync_playwright() as playwright:
-    run(playwright)
+
+if __name__ == "__main__":
+    with sync_playwright() as p:
+        main(p)
 ```
 
 ## Browser Tool Architecture
