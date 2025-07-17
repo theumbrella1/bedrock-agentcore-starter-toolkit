@@ -18,16 +18,16 @@ agentcore create_mcp_gateway \
 
 # Create a Gateway Target with predefined smithy model
 agentcore create_mcp_gateway_target \
---region us-east-1 \
---gateway-arn arn:aws:bedrock-agentcore:us-east-1:123:gateway/gateway-id \
+--region us-west-2 \
+--gateway-arn arn:aws:bedrock-agentcore:us-west-2:123:gateway/gateway-id \
 --gateway-url https://gateway-id.gateway.bedrock-agentcore.us-west-2.amazonaws.com/mcp \
 --role-arn arn:aws:iam::123:role/BedrockAgentCoreGatewayRole \
 --target-type smithyModel
 
 # Create a Gateway Target with OpenAPI target (OAuth with API Key)
 agentcore create_mcp_gateway_target \
---region us-east-1 \
---gateway-arn arn:aws:bedrock-agentcore:us-east-1:123:gateway/gateway-id \
+--region us-west-2 \
+--gateway-arn arn:aws:bedrock-agentcore:us-west-2:123:gateway/gateway-id \
 --gateway-url https://gateway-id.gateway.bedrock-agentcore.us-west-2.amazonaws.com/mcp \
 --role-arn arn:aws:iam::123:role/BedrockAgentCoreGatewayRole \
 --target-type openApiSchema \
@@ -36,8 +36,8 @@ agentcore create_mcp_gateway_target \
 
 # Create a Gateway Target with OpenAPI target (OAuth with credential provider)
 agentcore create_mcp_gateway_target \
---region us-east-1 \
---gateway-arn arn:aws:bedrock-agentcore:us-east-1:123:gateway/gateway-id \
+--region us-west-2 \
+--gateway-arn arn:aws:bedrock-agentcore:us-west-2:123:gateway/gateway-id \
 --gateway-url https://gateway-id.gateway.bedrock-agentcore.us-west-2.amazonaws.com/mcp \
 --role-arn arn:aws:iam::123:role/BedrockAgentCoreGatewayRole \
 --target-type openApiSchema \
