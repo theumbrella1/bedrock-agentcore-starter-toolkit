@@ -115,7 +115,8 @@ class TestCodeBuildService:
 
         # Should not specify LocationConstraint for us-east-1
         mock_clients["s3"].create_bucket.assert_called_once_with(
-            Bucket="bedrock-agentcore-codebuild-sources-123456789012-us-east-1"
+            Bucket="bedrock-agentcore-codebuild-sources-123456789012-us-east-1",
+            CreateBucketConfiguration={"LocationConstraint": "us-east-1"},
         )
 
     @patch("os.walk")
@@ -169,9 +170,9 @@ class TestCodeBuildService:
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
         with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):  # Skip sleep in tests
-            role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn)
+            role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
-        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildExecutionRole-us-west-2"
+        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildRole-us-west-2-test"
         assert role_arn == expected_arn
 
         # Verify IAM operations
@@ -195,9 +196,9 @@ class TestCodeBuildService:
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
         with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):  # Skip sleep in tests
-            role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn)
+            role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
-        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildExecutionRole-us-west-2"
+        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildRole-us-west-2-test"
         assert role_arn == expected_arn
 
         # Verify that trust policy and role policy were updated
@@ -424,7 +425,7 @@ node_modules
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
         with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):
-            codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn)
+            codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
         # Check policy document
         policy_call = mock_clients["iam"].put_role_policy.call_args

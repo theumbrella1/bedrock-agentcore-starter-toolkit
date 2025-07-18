@@ -226,7 +226,7 @@ def _launch_with_codebuild(
     # Step 3: Create CodeBuild execution role (auto-create)
     log.info("Creating CodeBuild execution role...")
     codebuild_execution_role = codebuild_service.create_codebuild_execution_role(
-        account_id=account_id, ecr_repository_arn=ecr_repository_arn
+        account_id=account_id, ecr_repository_arn=ecr_repository_arn, agent_name=agent_name
     )
 
     # Step 4: Upload source with agent name and timestamp

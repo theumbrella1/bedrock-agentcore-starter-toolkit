@@ -42,12 +42,7 @@ class CodeBuildService:
         except ClientError:
             # Create bucket
             region = self.session.region_name
-            if region == "us-east-1":
-                self.s3_client.create_bucket(Bucket=bucket_name)
-            else:
-                self.s3_client.create_bucket(
-                    Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": region}
-                )
+            self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": region})
 
             # Set lifecycle to cleanup old builds
             self.s3_client.put_bucket_lifecycle_configuration(
@@ -114,10 +109,10 @@ class CodeBuildService:
         """Convert s3:// URL to bucket/key format for CodeBuild."""
         return source_location.replace("s3://", "") if source_location.startswith("s3://") else source_location
 
-    def create_codebuild_execution_role(self, account_id: str, ecr_repository_arn: str) -> str:
+    def create_codebuild_execution_role(self, account_id: str, ecr_repository_arn: str, agent_name: str) -> str:
         """Auto-create CodeBuild execution role."""
         region = self.session.region_name
-        role_name = f"BedrockAgentCoreCodeBuildExecutionRole-{region}"
+        role_name = f"BedrockAgentCoreCodeBuildRole-{region}-{agent_name}"
 
         trust_policy = {
             "Version": "2012-10-17",
