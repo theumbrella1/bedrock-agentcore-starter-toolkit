@@ -72,7 +72,7 @@ def mock_boto3_clients(monkeypatch):
     )
 
     monkeypatch.setattr("boto3.client", mock_client)
-    monkeypatch.setattr("boto3.Session", lambda: mock_session)
+    monkeypatch.setattr("boto3.Session", lambda *args, **kwargs: mock_session)
 
     return {"sts": mock_sts, "ecr": mock_ecr, "bedrock_agentcore": mock_bedrock_agentcore, "session": mock_session}
 

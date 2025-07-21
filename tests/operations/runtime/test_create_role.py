@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 
 from bedrock_agentcore_starter_toolkit.operations.runtime.create_role import (
     _attach_inline_policy,
-    create_runtime_execution_role,
+    get_or_create_runtime_execution_role,
 )
 
 
@@ -30,9 +30,15 @@ class TestCreateRole:
         """Create a mock logger."""
         return MagicMock(spec=logging.Logger)
 
-    def test_create_runtime_execution_role_success(self, mock_session, mock_logger):
+    def test_get_or_create_runtime_execution_role_success(self, mock_session, mock_logger):
         """Test successful role creation."""
         session, mock_iam = mock_session
+
+        # First call (check if exists) - role doesn't exist
+        error_response = {"Error": {"Code": "NoSuchEntity"}}
+        mock_iam.get_role.side_effect = ClientError(error_response, "GetRole")
+
+        # Second call (create role) - successful creation
         mock_iam.create_role.return_value = {"Role": {"Arn": "arn:aws:iam::123456789012:role/TestRole"}}
 
         with (
@@ -52,7 +58,7 @@ class TestCreateRole:
                 "bedrock_agentcore_starter_toolkit.operations.runtime.create_role._attach_inline_policy"
             ) as mock_attach,
         ):
-            result = create_runtime_execution_role(
+            result = get_or_create_runtime_execution_role(
                 session=session,
                 logger=mock_logger,
                 region="us-east-1",
@@ -65,9 +71,15 @@ class TestCreateRole:
             mock_attach.assert_called_once()
             mock_logger.info.assert_called()
 
-    def test_create_runtime_execution_role_with_custom_name(self, mock_session, mock_logger):
+    def test_get_or_create_runtime_execution_role_with_custom_name(self, mock_session, mock_logger):
         """Test role creation with custom name."""
         session, mock_iam = mock_session
+
+        # First call (check if exists) - role doesn't exist
+        error_response = {"Error": {"Code": "NoSuchEntity"}}
+        mock_iam.get_role.side_effect = ClientError(error_response, "GetRole")
+
+        # Second call (create role) - successful creation
         mock_iam.create_role.return_value = {"Role": {"Arn": "arn:aws:iam::123456789012:role/CustomRoleName"}}
 
         with (
@@ -85,7 +97,7 @@ class TestCreateRole:
             ),
             patch("bedrock_agentcore_starter_toolkit.operations.runtime.create_role._attach_inline_policy"),
         ):
-            result = create_runtime_execution_role(
+            result = get_or_create_runtime_execution_role(
                 session=session,
                 logger=mock_logger,
                 region="us-east-1",
@@ -101,94 +113,61 @@ class TestCreateRole:
                 Description="Execution role for BedrockAgentCore Runtime - test-agent",
             )
 
-    def test_create_runtime_execution_role_already_exists(self, mock_session, mock_logger):
-        """Test role creation when role already exists."""
+    def test_get_or_create_runtime_execution_role_already_exists(self, mock_session, mock_logger):
+        """Test getting existing role when role already exists."""
         session, mock_iam = mock_session
 
-        # Mock the create_role to raise EntityAlreadyExists error
-        error_response = {"Error": {"Code": "EntityAlreadyExists"}}
-        mock_iam.create_role.side_effect = ClientError(error_response, "CreateRole")
-
-        # Mock the get_role response
+        # Mock the get_role response (role exists)
         mock_iam.get_role.return_value = {"Role": {"Arn": "arn:aws:iam::123456789012:role/ExistingRole"}}
 
-        with (
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.render_trust_policy_template",
-                return_value='{"Version": "2012-10-17", "Statement": []}',
-            ),
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.render_execution_policy_template",
-                return_value='{"Version": "2012-10-17", "Statement": []}',
-            ),
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.validate_rendered_policy",
-                return_value={"Version": "2012-10-17", "Statement": []},
-            ),
-        ):
-            result = create_runtime_execution_role(
+        result = get_or_create_runtime_execution_role(
+            session=session,
+            logger=mock_logger,
+            region="us-east-1",
+            account_id="123456789012",
+            agent_name="test-agent",
+            role_name="ExistingRole",
+        )
+
+        assert result == "arn:aws:iam::123456789012:role/ExistingRole"
+        mock_iam.get_role.assert_called_once_with(RoleName="ExistingRole")
+        # create_role should not be called since role already exists
+        mock_iam.create_role.assert_not_called()
+        mock_logger.info.assert_called()
+
+    def test_get_or_create_runtime_execution_role_check_error(self, mock_session, mock_logger):
+        """Test error when checking role existence (other than NoSuchEntity)."""
+        session, mock_iam = mock_session
+
+        # Mock the get_role to raise a different error (not NoSuchEntity)
+        error_response = {"Error": {"Code": "AccessDenied"}}
+        mock_iam.get_role.side_effect = ClientError(error_response, "GetRole")
+
+        with pytest.raises(RuntimeError, match="Failed to check role existence"):
+            get_or_create_runtime_execution_role(
                 session=session,
                 logger=mock_logger,
                 region="us-east-1",
                 account_id="123456789012",
                 agent_name="test-agent",
-                role_name="ExistingRole",
+                role_name="TestRole",
             )
 
-            assert result == "arn:aws:iam::123456789012:role/ExistingRole"
-            mock_iam.create_role.assert_called_once()
-            mock_iam.get_role.assert_called_once_with(RoleName="ExistingRole")
-            mock_logger.info.assert_called_with(
-                "✓ Role already exists: %s", "arn:aws:iam::123456789012:role/ExistingRole"
-            )
+        mock_iam.get_role.assert_called_once_with(RoleName="TestRole")
+        mock_iam.create_role.assert_not_called()
+        mock_logger.error.assert_called()
 
-    def test_create_runtime_execution_role_error_getting_existing(self, mock_session, mock_logger):
-        """Test error when getting existing role."""
+    def test_get_or_create_runtime_execution_role_create_error(self, mock_session, mock_logger):
+        """Test error during role creation."""
         session, mock_iam = mock_session
 
-        # Mock the create_role to raise EntityAlreadyExists error
-        error_response = {"Error": {"Code": "EntityAlreadyExists"}}
-        mock_iam.create_role.side_effect = ClientError(error_response, "CreateRole")
+        # First call (check if exists) - role doesn't exist
+        error_response = {"Error": {"Code": "NoSuchEntity"}}
+        mock_iam.get_role.side_effect = ClientError(error_response, "GetRole")
 
-        # Mock the get_role to raise an error
-        error_response_get = {"Error": {"Code": "NoSuchEntity"}}
-        mock_iam.get_role.side_effect = ClientError(error_response_get, "GetRole")
-
-        with (
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.render_trust_policy_template",
-                return_value='{"Version": "2012-10-17", "Statement": []}',
-            ),
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.render_execution_policy_template",
-                return_value='{"Version": "2012-10-17", "Statement": []}',
-            ),
-            patch(
-                "bedrock_agentcore_starter_toolkit.operations.runtime.create_role.validate_rendered_policy",
-                return_value={"Version": "2012-10-17", "Statement": []},
-            ),
-        ):
-            with pytest.raises(RuntimeError, match="Failed to get existing role"):
-                create_runtime_execution_role(
-                    session=session,
-                    logger=mock_logger,
-                    region="us-east-1",
-                    account_id="123456789012",
-                    agent_name="test-agent",
-                    role_name="ExistingRole",
-                )
-
-            mock_iam.create_role.assert_called_once()
-            mock_iam.get_role.assert_called_once()
-            mock_logger.error.assert_called()
-
-    def test_create_runtime_execution_role_other_error(self, mock_session, mock_logger):
-        """Test other errors during role creation."""
-        session, mock_iam = mock_session
-
-        # Mock the create_role to raise a different error
-        error_response = {"Error": {"Code": "AccessDenied"}}
-        mock_iam.create_role.side_effect = ClientError(error_response, "CreateRole")
+        # Second call (create role) - raise AccessDenied error
+        error_response_create = {"Error": {"Code": "AccessDenied"}}
+        mock_iam.create_role.side_effect = ClientError(error_response_create, "CreateRole")
 
         with (
             patch(
@@ -205,7 +184,7 @@ class TestCreateRole:
             ),
         ):
             with pytest.raises(RuntimeError, match="Failed to create role"):
-                create_runtime_execution_role(
+                get_or_create_runtime_execution_role(
                     session=session,
                     logger=mock_logger,
                     region="us-east-1",

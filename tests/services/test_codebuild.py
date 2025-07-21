@@ -166,44 +166,47 @@ class TestCodeBuildService:
         assert result == "bucket/key"
 
     def test_create_codebuild_execution_role_new(self, codebuild_service, mock_clients):
-        """Test creating new IAM role."""
+        """Test creating new IAM role when none exists."""
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
-        with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):  # Skip sleep in tests
+        # Mock role doesn't exist (NoSuchEntity exception)
+        mock_clients["iam"].get_role.side_effect = ClientError({"Error": {"Code": "NoSuchEntity"}}, "GetRole")
+
+        # Mock the create_role response properly
+        mock_clients["iam"].create_role.return_value = {
+            "Role": {"Arn": "arn:aws:iam::123456789012:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-test123456"}
+        }
+
+        with patch("time.sleep"):  # Skip sleep in tests
             role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
-        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildRole-us-west-2-test"
-        assert role_arn == expected_arn
+        # Role ARN should follow new naming pattern: AmazonBedrockAgentCoreSDKCodeBuild-{region}-{deterministic}
+        assert role_arn.startswith("arn:aws:iam::123456789012:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-")
 
-        # Verify IAM operations
+        # Verify IAM operations - should check for existence first, then create
+        mock_clients["iam"].get_role.assert_called_once()
         mock_clients["iam"].create_role.assert_called_once()
         mock_clients["iam"].put_role_policy.assert_called_once()
 
     def test_create_codebuild_execution_role_existing(self, codebuild_service, mock_clients):
-        """Test using existing IAM role."""
-
-        # Create a proper exception class that can be caught by type
-        class MockEntityAlreadyExistsException(ClientError):
-            def __init__(self):
-                super().__init__({"Error": {"Code": "EntityAlreadyExistsException"}}, "CreateRole")
-
-        # Mock the exceptions structure and the create_role behavior
-        mock_clients["iam"].exceptions = Mock()
-        mock_clients["iam"].exceptions.EntityAlreadyExistsException = MockEntityAlreadyExistsException
-        mock_clients["iam"].create_role.side_effect = MockEntityAlreadyExistsException()
-        mock_clients["iam"].update_assume_role_policy.return_value = {}
-
+        """Test reusing existing IAM role."""
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
-        with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):  # Skip sleep in tests
+        # Mock role already exists
+        mock_clients["iam"].get_role.return_value = {
+            "Role": {"Arn": "arn:aws:iam::123456789012:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-existing123"}
+        }
+
+        with patch("time.sleep"):  # Skip sleep in tests
             role_arn = codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
-        expected_arn = "arn:aws:iam::123456789012:role/BedrockAgentCoreCodeBuildRole-us-west-2-test"
-        assert role_arn == expected_arn
+        # Should return the existing role ARN
+        assert role_arn == "arn:aws:iam::123456789012:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-existing123"
 
-        # Verify that trust policy and role policy were updated
-        mock_clients["iam"].update_assume_role_policy.assert_called_once()
-        mock_clients["iam"].put_role_policy.assert_called_once()
+        # Verify that get_role was called but create_role was NOT called
+        mock_clients["iam"].get_role.assert_called_once()
+        mock_clients["iam"].create_role.assert_not_called()
+        mock_clients["iam"].put_role_policy.assert_not_called()
 
     def test_create_or_update_project_new(self, codebuild_service, mock_clients):
         """Test creating new CodeBuild project."""
@@ -424,7 +427,15 @@ node_modules
         """Test IAM role has correct permissions."""
         ecr_arn = "arn:aws:ecr:us-west-2:123456789012:repository/test-repo"
 
-        with patch("bedrock_agentcore_starter_toolkit.services.codebuild.time.sleep"):
+        # Mock role doesn't exist (NoSuchEntity exception)
+        mock_clients["iam"].get_role.side_effect = ClientError({"Error": {"Code": "NoSuchEntity"}}, "GetRole")
+
+        # Mock the create_role response properly
+        mock_clients["iam"].create_role.return_value = {
+            "Role": {"Arn": "arn:aws:iam::123456789012:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-test123456"}
+        }
+
+        with patch("time.sleep"):
             codebuild_service.create_codebuild_execution_role("123456789012", ecr_arn, "test")
 
         # Check policy document

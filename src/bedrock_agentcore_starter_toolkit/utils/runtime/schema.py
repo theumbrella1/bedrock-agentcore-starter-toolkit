@@ -35,6 +35,7 @@ class AWSConfig(BaseModel):
     """AWS-specific configuration."""
 
     execution_role: Optional[str] = Field(default=None, description="AWS IAM execution role ARN")
+    execution_role_auto_create: bool = Field(default=False, description="Whether to auto-create execution role")
     account: Optional[str] = Field(default=None, description="AWS account ID")
     region: Optional[str] = Field(default=None, description="AWS region")
     ecr_repository: Optional[str] = Field(default=None, description="ECR repository URI")
@@ -105,8 +106,8 @@ class BedrockAgentCoreAgentSchema(BaseModel):
 
         # AWS fields required for cloud deployment
         if not for_local:
-            if not self.aws.execution_role:
-                errors.append("Missing 'aws.execution_role' for cloud deployment")
+            if not self.aws.execution_role and not self.aws.execution_role_auto_create:
+                errors.append("Missing 'aws.execution_role' for cloud deployment (or enable auto-creation)")
             if not self.aws.region:
                 errors.append("Missing 'aws.region' for cloud deployment")
             if not self.aws.account:
