@@ -47,8 +47,12 @@ def _deploy_to_bedrock_agentcore(agent_config, project_config, config_path, agen
     network_config = agent_config.aws.network_configuration.to_aws_dict()
     protocol_config = agent_config.aws.protocol_configuration.to_aws_dict()
 
+    # Execution role should already be configured during configure step
     if not agent_config.aws.execution_role:
-        raise ValueError("Execution role not configured")
+        raise ValueError(
+            "Execution role not configured. Please run configure with --auto-create-execution-role "
+            "or provide --execution-role"
+        )
 
     agent_info = bedrock_agentcore_client.create_or_update_agent(
         agent_id=agent_config.bedrock_agentcore.agent_id,

@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+import boto3
+
 from ...services.ecr import get_account_id, get_region
 from ...utils.runtime.config import merge_agent_config, save_config
 from ...utils.runtime.container import ContainerRuntime
@@ -16,6 +18,7 @@ from ...utils.runtime.schema import (
     ObservabilityConfig,
     ProtocolConfiguration,
 )
+from .create_role import create_runtime_execution_role
 from .models import ConfigureResult
 
 log = logging.getLogger(__name__)
@@ -40,7 +43,7 @@ def configure_bedrock_agentcore(
     Args:
         agent_name: name of the agent,
         entrypoint_path: Path to the entrypoint file
-        execution_role: AWS execution role ARN or name
+        execution_role: AWS execution role ARN or name (auto-created if not provided)
         ecr_repository: ECR repository URI
         container_runtime: Container runtime to use
         auto_create_ecr: Whether to auto-create ECR repository
@@ -83,6 +86,22 @@ def configure_bedrock_agentcore(
     if verbose:
         log.debug("Initializing container runtime with: %s", container_runtime or "default")
     runtime = ContainerRuntime(container_runtime)
+
+    # Handle execution role creation - auto-create if not provided (like ECR)
+    if not execution_role:
+        if verbose:
+            log.debug("Auto-creating execution role for agent: %s", agent_name)
+
+        session = boto3.Session(region_name=region)
+        execution_role = create_runtime_execution_role(
+            session=session,
+            logger=log,
+            region=region,
+            account_id=account_id,
+            agent_name=agent_name,
+        )
+
+        log.info("✓ Created execution role: %s", execution_role)
 
     # Handle execution role ARN
     if execution_role and not execution_role.startswith("arn:aws:iam::"):
