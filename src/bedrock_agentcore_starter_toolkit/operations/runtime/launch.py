@@ -113,8 +113,6 @@ def _ensure_execution_role(agent_config, project_config, config_path, agent_name
 
     # Step 3: Create role if needed (idempotent)
     if agent_config.aws.execution_role_auto_create:
-        log.info("Getting or creating execution role for agent: %s", agent_name)
-
         execution_role_arn = get_or_create_runtime_execution_role(
             session=session,
             logger=log,

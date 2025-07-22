@@ -12,15 +12,12 @@ from ...operations.runtime import (
     validate_agent_name,
 )
 from ...operations.runtime.models import ConfigureResult, LaunchResult, StatusResult
+
+# Setup centralized logging for SDK usage (notebooks, scripts, imports)
+from ...utils.logging_config import setup_toolkit_logging
 from ...utils.runtime.entrypoint import parse_entrypoint
 
-# Configure logger for ALL toolkit modules (ensures all operation logs appear)
-toolkit_logger = logging.getLogger("bedrock_agentcore_starter_toolkit")
-if not toolkit_logger.handlers:
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(message)s"))
-    toolkit_logger.addHandler(handler)
-    toolkit_logger.setLevel(logging.INFO)
+setup_toolkit_logging(mode="sdk")
 
 # Configure logger for this module
 log = logging.getLogger(__name__)
