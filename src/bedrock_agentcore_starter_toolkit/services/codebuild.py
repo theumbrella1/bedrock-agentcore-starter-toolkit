@@ -1,7 +1,6 @@
 """CodeBuild service for ARM64 container builds."""
 
 import fnmatch
-import json
 import logging
 import os
 import tempfile
@@ -13,6 +12,8 @@ from typing import List
 
 import boto3
 from botocore.exceptions import ClientError
+
+from ..operations.runtime.create_role import get_or_create_codebuild_execution_role
 
 
 class CodeBuildService:
@@ -110,81 +111,16 @@ class CodeBuildService:
         return source_location.replace("s3://", "") if source_location.startswith("s3://") else source_location
 
     def create_codebuild_execution_role(self, account_id: str, ecr_repository_arn: str, agent_name: str) -> str:
-        """Auto-create CodeBuild execution role."""
-        region = self.session.region_name
-        role_name = f"BedrockAgentCoreCodeBuildRole-{region}-{agent_name}"
-
-        trust_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": {"Service": "codebuild.amazonaws.com"},
-                    "Action": "sts:AssumeRole",
-                    "Condition": {"StringEquals": {"aws:SourceAccount": account_id}},
-                }
-            ],
-        }
-
-        permissions_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {"Effect": "Allow", "Action": ["ecr:GetAuthorizationToken"], "Resource": "*"},
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "ecr:BatchCheckLayerAvailability",
-                        "ecr:BatchGetImage",
-                        "ecr:GetDownloadUrlForLayer",
-                        "ecr:PutImage",
-                        "ecr:InitiateLayerUpload",
-                        "ecr:UploadLayerPart",
-                        "ecr:CompleteLayerUpload",
-                    ],
-                    "Resource": ecr_repository_arn,
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
-                    "Resource": f"arn:aws:logs:{region}:{account_id}:log-group:/aws/codebuild/bedrock-agentcore-*",
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": ["s3:GetObject"],
-                    "Resource": f"arn:aws:s3:::{self.get_source_bucket_name(account_id)}/*",
-                },
-            ],
-        }
-
-        try:
-            # Create role
-            self.iam_client.create_role(
-                RoleName=role_name,
-                AssumeRolePolicyDocument=json.dumps(trust_policy),
-                Description="CodeBuild execution role for Bedrock AgentCore ARM64 builds",
-            )
-
-            role_arn = f"arn:aws:iam::{account_id}:role/{role_name}"
-            self.logger.info("Created CodeBuild execution role: %s", role_arn)
-
-        except self.iam_client.exceptions.EntityAlreadyExistsException:
-            # Role exists, update trust policy to ensure it's current
-            role_arn = f"arn:aws:iam::{account_id}:role/{role_name}"
-            self.logger.info("Using existing CodeBuild execution role: %s", role_arn)
-
-            # Update assume role policy to ensure it's current
-            self.iam_client.update_assume_role_policy(RoleName=role_name, PolicyDocument=json.dumps(trust_policy))
-
-        # Always update/create the policy to ensure latest permissions
-        self.iam_client.put_role_policy(
-            RoleName=role_name, PolicyName="CodeBuildExecutionPolicy", PolicyDocument=json.dumps(permissions_policy)
+        """Get or create CodeBuild execution role using shared role creation logic."""
+        return get_or_create_codebuild_execution_role(
+            session=self.session,
+            logger=self.logger,
+            region=self.session.region_name,
+            account_id=account_id,
+            agent_name=agent_name,
+            ecr_repository_arn=ecr_repository_arn,
+            source_bucket_name=self.get_source_bucket_name(account_id),
         )
-
-        # Wait for IAM propagation to prevent CodeBuild authorization errors
-        self.logger.info("Waiting for IAM role propagation...")
-        time.sleep(15)
-
-        return role_arn
 
     def create_or_update_project(
         self, agent_name: str, ecr_repository_uri: str, execution_role: str, source_location: str

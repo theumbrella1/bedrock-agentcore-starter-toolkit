@@ -265,6 +265,9 @@ def launch(
     local: bool = typer.Option(False, "--local", "-l", help="Run locally"),
     push_ecr: bool = typer.Option(False, "--push-ecr", "-p", help="Build and push to ECR only (no deployment)"),
     codebuild: bool = typer.Option(False, "--codebuild", "-cb", help="Use CodeBuild for ARM64 builds"),
+    auto_update_on_conflict: bool = typer.Option(
+        False, "--auto-update-on-conflict", help="Enable automatic update when agent already exists"
+    ),
     envs: List[str] = typer.Option(  # noqa: B008
         None, "--env", "-env", help="Environment variables for agent (format: KEY=VALUE)"
     ),
@@ -309,6 +312,7 @@ def launch(
                 push_ecr_only=push_ecr,
                 use_codebuild=codebuild,
                 env_vars=env_vars,
+                auto_update_on_conflict=auto_update_on_conflict,
             )
 
         # Handle result based on mode
@@ -531,8 +535,6 @@ def status(
     try:
         if not verbose:
             if "config" in status_json:
-                print(f"Getting Status for {status_json['config']['name']}")
-
                 if status_json["agent"] is None:
                     console.print(
                         Panel(

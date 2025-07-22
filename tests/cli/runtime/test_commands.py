@@ -191,6 +191,7 @@ agents:
                     push_ecr_only=False,
                     use_codebuild=False,
                     env_vars=None,
+                    auto_update_on_conflict=False,
                 )
             finally:
                 os.chdir(original_cwd)
@@ -463,6 +464,7 @@ agents:
                     push_ecr_only=False,
                     use_codebuild=False,
                     env_vars=None,
+                    auto_update_on_conflict=False,
                 )
             finally:
                 os.chdir(original_cwd)
@@ -1667,6 +1669,7 @@ agents:
                     push_ecr_only=True,
                     use_codebuild=False,
                     env_vars=None,
+                    auto_update_on_conflict=False,
                 )
             finally:
                 os.chdir(original_cwd)
@@ -1772,6 +1775,7 @@ agents:
                     push_ecr_only=False,
                     use_codebuild=False,
                     env_vars=None,
+                    auto_update_on_conflict=False,
                 )
             finally:
                 os.chdir(original_cwd)
