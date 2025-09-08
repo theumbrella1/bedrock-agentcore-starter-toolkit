@@ -30,7 +30,7 @@ class TestSimpleAgent(BaseCLIRuntimeTest):
 
                 @app.entrypoint
                 async def agent_invocation(payload):
-                    return agent(payload.get("message"))
+                    return agent(payload.get("prompt"))
 
                 app.run()
             """).strip()
@@ -71,7 +71,9 @@ class TestSimpleAgent(BaseCLIRuntimeTest):
         )
 
         invoke_invocation = CommandInvocation(
-            command=["invoke", "tell me a joke"], user_input=[], validator=lambda result: self.validate_invoke(result)
+            command=["invoke", '{"prompt": "tell me a joke"}'],
+            user_input=[],
+            validator=lambda result: self.validate_invoke(result),
         )
 
         return [configure_invocation, launch_invocation, status_invocation, invoke_invocation]
@@ -80,14 +82,14 @@ class TestSimpleAgent(BaseCLIRuntimeTest):
         output = result.output
         logger.info(output)
 
-        assert "Bedrock AgentCore Configured" in output
-        assert "Name: agent" in output
+        assert "Configuration Complete" in output
+        assert "Agent Name: agent" in output
         assert TEST_ROLE in output
         assert "Authorization: IAM" in output
         assert ".bedrock_agentcore.yaml" in output
 
         if TEST_ECR == "auto":
-            assert "ECR: Auto-create" in output
+            assert "ECR Repository: Auto-create" in output
         else:
             assert TEST_ECR in output
 
@@ -99,29 +101,30 @@ class TestSimpleAgent(BaseCLIRuntimeTest):
         assert "Agent Name: agent" in output
         assert "Agent ARN:" in output
         assert "ECR URI:" in output
-        assert "You can now check the status of your Bedrock AgentCore endpoint with:" in output
-        assert "You can now invoke your Bedrock AgentCore endpoint with:" in output
+        assert "Next Steps:" in output
+        assert "agentcore status" in output
+        assert "agentcore invoke" in output
 
     def validate_status(self, result: Result):
         output = result.output
         logger.info(output)
 
-        assert "Status of the current Agent:" in output
-        assert "Status of the current Endpoint:" in output
-        assert "Endpoint Id: DEFAULT" in output
-        assert "Endpoint Name: DEFAULT" in output
+        assert "Agent Details:" in output
+        assert "Agent Name: agent" in output
+        assert "Agent ARN:" in output
+        assert "Endpoint: DEFAULT" in output
         assert "READY" in output
 
     def validate_invoke(self, result: Result):
         output = result.output
         logger.info(output)
 
-        assert "Session ID:" in output
+        # Validate new consistent panel format
+        assert "Session:" in output
+        assert "Request ID:" in output
+        assert "ARN:" in output
+        assert "Logs:" in output
         assert "Response:" in output
-        assert "application/json" in output
-        # for some reason there is a newline in front of "everything"
-        # so skip asserting on the output for now
-        # assert "Because they make up everything!" in output
 
 
 def test(tmp_path):

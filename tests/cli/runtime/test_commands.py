@@ -66,7 +66,7 @@ def handler(payload):
             )
 
             assert result.exit_code == 0
-            assert "Configuration Summary" in result.stdout
+            assert "Configuration Complete" in result.stdout
             mock_configure.assert_called_once()
 
     def test_configure_with_oauth(self, tmp_path):
@@ -627,17 +627,9 @@ agents:
             "default_agent: test-agent\nagents:\n  test-agent:\n    name: test-agent\n    entrypoint: test.py"
         )
 
-        with (
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke,
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands._handle_error") as mock_error,
-        ):
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
             # Simulate ValueError with "not deployed" message
             mock_invoke.side_effect = ValueError("Agent is not deployed to Bedrock AgentCore")
-
-            def mock_handle_error_side_effect(message, exception=None):
-                raise typer.Exit(1)
-
-            mock_error.side_effect = mock_handle_error_side_effect
 
             original_cwd = Path.cwd()
             os.chdir(tmp_path)
@@ -646,9 +638,8 @@ agents:
                 result = self.runner.invoke(app, ["invoke", '{"message": "hello"}'])
 
                 assert result.exit_code == 1
-                mock_error.assert_called_once_with(
-                    "Bedrock AgentCore not deployed. Run 'bedrock_agentcore launch' first", mock_invoke.side_effect
-                )
+                assert "Agent not deployed - run 'agentcore launch' to deploy" in result.stdout
+                assert "agentcore launch" in result.stdout
             finally:
                 os.chdir(original_cwd)
 
@@ -659,17 +650,9 @@ agents:
             "default_agent: test-agent\nagents:\n  test-agent:\n    name: test-agent\n    entrypoint: test.py"
         )
 
-        with (
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke,
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands._handle_error") as mock_error,
-        ):
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
             # Simulate general ValueError
             mock_invoke.side_effect = ValueError("Invalid payload format")
-
-            def mock_handle_error_side_effect(message, exception=None):
-                raise typer.Exit(1)
-
-            mock_error.side_effect = mock_handle_error_side_effect
 
             original_cwd = Path.cwd()
             os.chdir(tmp_path)
@@ -678,7 +661,37 @@ agents:
                 result = self.runner.invoke(app, ["invoke", "invalid-json"])
 
                 assert result.exit_code == 1
-                mock_error.assert_called_with("Invocation failed: Invalid payload format", mock_invoke.side_effect)
+                assert "Invocation failed: Invalid payload format" in result.stdout
+            finally:
+                os.chdir(original_cwd)
+
+    def test_invoke_command_error_with_cloudwatch_logs(self, tmp_path):
+        """Test invoke command error that includes CloudWatch logs information."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_content = """
+default_agent: test-agent
+agents:
+  test-agent:
+    name: test-agent
+    entrypoint: test.py
+    bedrock_agentcore:
+      agent_id: AGENT123
+"""
+        config_file.write_text(config_content.strip())
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
+            # Simulate a runtime error
+            mock_invoke.side_effect = RuntimeError("Connection timeout")
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                result = self.runner.invoke(app, ["invoke", '{"prompt": "Hello"}'])
+
+                assert result.exit_code == 1
+                assert "Invocation failed: Connection timeout" in result.stdout
+                assert "Logs:" in result.stdout
             finally:
                 os.chdir(original_cwd)
 
@@ -689,17 +702,9 @@ agents:
             "default_agent: test-agent\nagents:\n  test-agent:\n    name: test-agent\n    entrypoint: test.py"
         )
 
-        with (
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke,
-            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands._handle_error") as mock_error,
-        ):
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
             # Simulate general Exception during invoke
             mock_invoke.side_effect = Exception("Network timeout during invocation")
-
-            def mock_handle_error_side_effect(message, exception=None):
-                raise typer.Exit(1)
-
-            mock_error.side_effect = mock_handle_error_side_effect
 
             original_cwd = Path.cwd()
             os.chdir(tmp_path)
@@ -708,9 +713,7 @@ agents:
                 result = self.runner.invoke(app, ["invoke", '{"message": "hello"}'])
 
                 assert result.exit_code == 1
-                mock_error.assert_called_once_with(
-                    "Invocation failed: Network timeout during invocation", mock_invoke.side_effect
-                )
+                assert "Invocation failed: Network timeout during invocation" in result.stdout
             finally:
                 os.chdir(original_cwd)
 
@@ -882,6 +885,109 @@ agents:
             finally:
                 os.chdir(original_cwd)
 
+    def test_handle_requirements_file_display_none_return(self, tmp_path):
+        """Test _handle_requirements_file_display with no deps found raises typer.Exit."""
+        from bedrock_agentcore_starter_toolkit.cli.runtime.commands import _handle_requirements_file_display
+
+        with (
+            patch(
+                "bedrock_agentcore_starter_toolkit.cli.runtime.commands._prompt_for_requirements_file"
+            ) as mock_prompt,
+            patch("bedrock_agentcore_starter_toolkit.utils.runtime.entrypoint.detect_dependencies") as mock_detect,
+        ):
+            mock_prompt.return_value = None
+            # Mock detect_dependencies to return no dependencies found
+            mock_deps = type("obj", (object,), {"found": False, "file": None})()
+            mock_detect.return_value = mock_deps
+
+            # This should raise typer.Exit when no deps found and user provides no file
+            with pytest.raises(typer.Exit):
+                _handle_requirements_file_display(None)
+
+    def test_prompt_for_requirements_empty_response(self, tmp_path):
+        """Test _prompt_for_requirements_file with empty response."""
+        from bedrock_agentcore_starter_toolkit.cli.runtime.commands import _prompt_for_requirements_file
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.prompt") as mock_prompt:
+            mock_prompt.return_value = "   "  # Empty/whitespace response
+
+            result = _prompt_for_requirements_file("Enter path: ", "")
+            assert result is None
+
+    def test_configure_no_agents_configured(self, tmp_path):
+        """Test configure list with no agents configured."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_file.write_text("default_agent: null\nagents: {}")
+
+        with patch("bedrock_agentcore_starter_toolkit.utils.runtime.config.load_config") as mock_load_config:
+            # Mock empty agents config
+            mock_config = type("obj", (object,), {"agents": {}})()
+            mock_load_config.return_value = mock_config
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                result = self.runner.invoke(app, ["configure", "list"])
+                assert result.exit_code == 0
+                assert "No agents configured" in result.stdout
+            finally:
+                os.chdir(original_cwd)
+
+    def test_launch_deprecated_code_build_flag(self, tmp_path):
+        """Test launch command with deprecated --code-build flag."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_file.write_text(
+            "default_agent: test-agent\nagents:\n  test-agent:\n    name: test-agent\n    entrypoint: test.py"
+        )
+
+        with (
+            patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.launch_bedrock_agentcore") as mock_launch,
+            patch("bedrock_agentcore_starter_toolkit.utils.runtime.config.load_config") as mock_load_config,
+        ):
+            mock_launch.return_value = None
+            # Mock config loading
+            mock_config = type("obj", (object,), {"default_agent": "test-agent", "agents": {}})()
+            mock_load_config.return_value = mock_config
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                result = self.runner.invoke(app, ["launch", "--code-build"])
+                # Just check that the deprecation warning appears
+                assert "DEPRECATION WARNING" in result.stdout
+                assert "--code-build flag is deprecated" in result.stdout
+            finally:
+                os.chdir(original_cwd)
+
+    def test_status_verbose_json_output(self, tmp_path):
+        """Test status command with verbose JSON output."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_file.write_text(
+            "default_agent: test-agent\nagents:\n  test-agent:\n    name: test-agent\n    entrypoint: test.py"
+        )
+
+        mock_status_data = {"agent": "test-agent", "status": "deployed", "details": {"key": "value"}}
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.get_status") as mock_status:
+            # Create a mock object with model_dump method
+            mock_result = Mock()
+            mock_result.model_dump.return_value = mock_status_data
+            mock_status.return_value = mock_result
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                result = self.runner.invoke(app, ["status", "--verbose"])
+                assert result.exit_code == 0
+                # Should contain JSON output in verbose mode
+                assert "agent" in result.stdout
+                assert "test-agent" in result.stdout
+            finally:
+                os.chdir(original_cwd)
+
     def test_invoke_command_basic(self, tmp_path):
         """Test invoke command."""
         config_file = tmp_path / ".bedrock_agentcore.yaml"
@@ -907,7 +1013,7 @@ agents:
                 result = self.runner.invoke(app, ["invoke", '{"message": "hello"}', "--session-id", "test-session-123"])
 
                 assert result.exit_code == 0
-                assert "Session ID: test-session-123" in result.stdout
+                assert "Session: test-session-123" in result.stdout
                 mock_invoke.assert_called_once_with(
                     config_path=config_file,
                     payload={"message": "hello"},
@@ -917,6 +1023,103 @@ agents:
                     local_mode=False,
                     user_id=None,
                 )
+            finally:
+                os.chdir(original_cwd)
+
+    def test_invoke_command_verbose_flag(self, tmp_path):
+        """Test invoke command with verbose flag shows full response."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_content = """
+default_agent: test-agent
+agents:
+  test-agent:
+    name: test-agent
+    entrypoint: test.py
+"""
+        config_file.write_text(config_content.strip())
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
+            # Mock AWS-style response with actual bytes (simulating _handle_aws_response processing)
+            mock_result = Mock()
+            mock_result.response = {"ResponseMetadata": {"RequestId": "test-id"}, "response": ["hello world"]}
+            mock_result.session_id = "test-session-123"
+            mock_invoke.return_value = mock_result
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                # Test invoke - should show clean response
+                result = self.runner.invoke(app, ["invoke", '{"message": "hello"}'])
+                assert result.exit_code == 0
+                assert "Session: test-session-123" in result.stdout
+                assert "hello world" in result.stdout
+                assert "Response:" in result.stdout
+                assert "Request ID: test-id" in result.stdout
+            finally:
+                os.chdir(original_cwd)
+
+    def test_invoke_command_response_parsing(self, tmp_path):
+        """Test invoke command properly parses different response formats."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_content = """
+default_agent: test-agent
+agents:
+  test-agent:
+    name: test-agent
+    entrypoint: test.py
+"""
+        config_file.write_text(config_content.strip())
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.invoke_bedrock_agentcore") as mock_invoke:
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                # Test 1: Simple string response (after service layer processing)
+                mock_result = Mock()
+                mock_result.response = {"response": ["hello"]}  # Service layer already processed bytes
+                mock_result.session_id = "session-1"
+                mock_invoke.return_value = mock_result
+
+                result = self.runner.invoke(app, ["invoke", '{"test": "1"}'])
+                assert result.exit_code == 0
+                assert "hello" in result.stdout
+
+                # Test 2: JSON response (after service layer processing)
+                mock_result.response = {"response": [{"key": "value", "number": 42}]}  # Service layer processed
+                mock_result.session_id = "session-2"
+
+                result = self.runner.invoke(app, ["invoke", '{"test": "2"}'])
+                assert result.exit_code == 0
+                assert "'key': 'value'" in result.stdout
+                assert "'number': 42" in result.stdout
+
+                # Test 3: HTTP/Local format (already clean)
+                mock_result.response = {"response": "direct response"}
+                mock_result.session_id = "session-3"
+
+                result = self.runner.invoke(app, ["invoke", '{"test": "3"}'])
+                assert result.exit_code == 0
+                assert "direct response" in result.stdout
+
+                # Test 4: Multi-part list response (joined)
+                mock_result.response = {"response": ["First part", " of the response", " continues here"]}
+                mock_result.session_id = "session-4"
+
+                result = self.runner.invoke(app, ["invoke", '{"test": "4"}'])
+                assert result.exit_code == 0
+                assert "First part of the response continues here" in result.stdout
+
+                # Test 5: Empty response (streaming simulation)
+                mock_result.response = {}
+                mock_result.session_id = "session-5"
+
+                result = self.runner.invoke(app, ["invoke", '{"test": "5"}'])
+                assert result.exit_code == 0
+                assert "Session: session-5" in result.stdout
+                # No response section should be shown for empty responses
+
             finally:
                 os.chdir(original_cwd)
 
@@ -1131,9 +1334,9 @@ agents:
                 result = self.runner.invoke(app, ["invoke", "Hello World"])
 
                 assert result.exit_code == 0
-                # Verify text was auto-wrapped in message field
+                # Verify text was auto-wrapped in prompt field
                 call_args = mock_invoke.call_args
-                assert call_args.kwargs["payload"] == {"message": "Hello World"}
+                assert call_args.kwargs["payload"] == {"prompt": "Hello World"}
             finally:
                 os.chdir(original_cwd)
 
@@ -1171,7 +1374,7 @@ agents:
             try:
                 result = self.runner.invoke(app, ["launch", "--local-build"])
                 assert result.exit_code == 0
-                assert "Local Docker Build Deployment Successful!" in result.stdout
+                assert "Local Build Deployment Successful!" in result.stdout
                 assert "agentcore status" in result.stdout
                 assert "agentcore invoke" in result.stdout
 
@@ -1181,6 +1384,52 @@ agents:
                     agent_name=None,
                     local=False,
                     use_codebuild=False,  # Should be False due to --local-build
+                    env_vars=None,
+                    auto_update_on_conflict=False,
+                )
+            finally:
+                os.chdir(original_cwd)
+
+    def test_launch_command_codebuild_success(self, tmp_path):
+        """Test launch command with CodeBuild mode success and CloudWatch logs."""
+        config_file = tmp_path / ".bedrock_agentcore.yaml"
+        config_content = """
+default_agent: test-agent
+agents:
+  test-agent:
+    name: test-agent
+    entrypoint: test.py
+"""
+        config_file.write_text(config_content.strip())
+
+        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.launch_bedrock_agentcore") as mock_launch:
+            mock_result = Mock()
+            mock_result.mode = "codebuild"  # This should trigger the missing code path
+            mock_result.tag = "bedrock_agentcore-test-agent"
+            mock_result.agent_arn = "arn:aws:bedrock:us-west-2:123456789012:agent-runtime/AGENT123"
+            mock_result.ecr_uri = "123456789012.dkr.ecr.us-west-2.amazonaws.com/test-agent"
+            mock_result.codebuild_id = "codebuild-project:12345"
+            mock_result.agent_id = "AGENT123"
+            mock_launch.return_value = mock_result
+
+            original_cwd = Path.cwd()
+            os.chdir(tmp_path)
+
+            try:
+                result = self.runner.invoke(app, ["launch"])
+                assert result.exit_code == 0
+                assert "CodeBuild Deployment Successful!" in result.stdout
+                assert "ARM64 container deployed" in result.stdout
+                assert "CloudWatch Logs:" in result.stdout
+                assert "agentcore status" in result.stdout
+                assert "agentcore invoke" in result.stdout
+
+                # Verify the core function was called with correct parameters
+                mock_launch.assert_called_once_with(
+                    config_path=config_file,
+                    agent_name=None,
+                    local=False,
+                    use_codebuild=True,  # Default CodeBuild mode
                     env_vars=None,
                     auto_update_on_conflict=False,
                 )
@@ -1231,34 +1480,9 @@ agents:
         try:
             result = self.runner.invoke(app, ["invoke", '{"message": "hello"}'])
             assert result.exit_code == 1
-            assert ".bedrock_agentcore.yaml not found" in result.stdout
+            assert "Configuration Not Found" in result.stdout
         finally:
             os.chdir(original_cwd)
-
-    def test_status_verbose_json_output(self, tmp_path):
-        """Test status command with verbose JSON output."""
-        config_file = tmp_path / ".bedrock_agentcore.yaml"
-        config_file.write_text("name: test-agent")
-
-        with patch("bedrock_agentcore_starter_toolkit.cli.runtime.commands.get_status") as mock_status:
-            mock_result = Mock()
-            mock_result.model_dump.return_value = {
-                "config": {"name": "test-agent"},
-                "agent": {"status": "deployed"},
-                "endpoint": {"status": "READY"},
-            }
-            mock_status.return_value = mock_result
-
-            original_cwd = Path.cwd()
-            os.chdir(tmp_path)
-
-            try:
-                result = self.runner.invoke(app, ["status", "--verbose"])
-                assert result.exit_code == 0
-                # Should contain JSON output
-                assert '"name": "test-agent"' in result.stdout
-            finally:
-                os.chdir(original_cwd)
 
     def test_status_command_missing_fields(self, tmp_path):
         """Test status command handles missing fields gracefully when endpoint is creating."""
@@ -2010,14 +2234,14 @@ agents:
 
                 assert result.exit_code == 0
                 assert "test-agent" in result.stdout
-                assert "Not available" in result.stdout  # Should show for missing fields
+                assert "Deploying" in result.stdout  # Should show deploying status for non-READY endpoint
                 assert "creating" in result.stdout  # Should show available status
                 mock_status.assert_called_once_with(config_file, None)
             finally:
                 os.chdir(original_cwd)
 
     def test_invoke_command_unicode_payload(self, tmp_path):
-        """Test invoke command with Unicode characters in payload."""
+        """Test invoke command with Unicode characters in response."""
         config_file = tmp_path / ".bedrock_agentcore.yaml"
         config_content = """
 default_agent: test-agent
@@ -2046,7 +2270,7 @@ agents:
             mock_load_config.return_value = mock_project_config
 
             mock_result = Mock()
-            mock_result.response = {"result": "success"}
+            mock_result.response = {"response": ["你好, नमस्ते, 👋, ✅"]}  # Unicode in response
             mock_result.session_id = "test-session"
             mock_invoke.return_value = mock_result
 
@@ -2154,7 +2378,7 @@ agents:
             mock_load_config.return_value = mock_project_config
 
             mock_result = Mock()
-            mock_result.response = {"result": "mixed_content_processed"}
+            mock_result.response = {"response": ["Hello World, 你好世界, 😊🌟✨, file_名前.txt, ✅"]}
             mock_result.session_id = "test-session"
             mock_invoke.return_value = mock_result
 
