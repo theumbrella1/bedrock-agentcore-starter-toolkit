@@ -47,7 +47,7 @@ class Runtime:
         region: Optional[str] = None,
         protocol: Optional[Literal["HTTP", "MCP"]] = None,
         disable_otel: bool = False,
-        non_interactive: bool = False,
+        non_interactive: bool = True,
     ) -> ConfigureResult:
         """Configure Bedrock AgentCore from notebook using an entrypoint file.
 
@@ -67,7 +67,7 @@ class Runtime:
             region: AWS region for deployment
             protocol: agent server protocol, must be either HTTP or MCP
             disable_otel: Whether to disable OpenTelemetry observability (default: False)
-            non_interactive: Skip interactive prompts and use defaults (default: False)
+            non_interactive: Skip interactive prompts and use defaults (default: True)
 
         Returns:
             ConfigureResult with configuration details
