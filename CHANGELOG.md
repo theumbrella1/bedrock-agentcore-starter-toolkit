@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.20] - 2025-10-08
+
+### Changes
+
+- feat: Add A2A protocol support to AgentCore Runtime toolkit (#255) (84c9456)
+- Fix documentation examples display (#254) (c699e4c)
+- docs: improvements to quickstart (#247) (3ee881b)
+
 ## [0.1.19] - 2025-10-03
 
 ### Changes
