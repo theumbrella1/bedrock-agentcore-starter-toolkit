@@ -1,5 +1,6 @@
 """Typed configuration schema for Bedrock AgentCore SDK."""
 
+from pathlib import Path
 from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -42,8 +43,7 @@ class NetworkConfiguration(BaseModel):
 
     network_mode: str = Field(default="PUBLIC", description="Network mode for deployment")
     network_mode_config: Optional[NetworkModeConfig] = Field(
-        default=None,
-        description="Network mode configuration (required for VPC mode)"
+        default=None, description="Network mode configuration (required for VPC mode)"
     )
 
     @field_validator("network_mode")
@@ -70,7 +70,7 @@ class NetworkConfiguration(BaseModel):
         if self.network_mode_config:
             result["networkModeConfig"] = {
                 "securityGroups": self.network_mode_config.security_groups,
-                "subnets": self.network_mode_config.subnets
+                "subnets": self.network_mode_config.subnets,
             }
 
         return result
@@ -149,6 +149,7 @@ class BedrockAgentCoreAgentSchema(BaseModel):
     entrypoint: str = Field(..., description="Entrypoint file path")
     platform: str = Field(default="linux/amd64", description="Target platform")
     container_runtime: str = Field(default="docker", description="Container runtime to use")
+    source_path: Optional[str] = Field(default=None, description="Directory containing agent source code")
     aws: AWSConfig = Field(default_factory=AWSConfig)
     bedrock_agentcore: BedrockAgentCoreDeploymentInfo = Field(default_factory=BedrockAgentCoreDeploymentInfo)
     codebuild: CodeBuildConfig = Field(default_factory=CodeBuildConfig)
@@ -156,6 +157,37 @@ class BedrockAgentCoreAgentSchema(BaseModel):
     authorizer_configuration: Optional[dict] = Field(default=None, description="JWT authorizer configuration")
     request_header_configuration: Optional[dict] = Field(default=None, description="Request header configuration")
     oauth_configuration: Optional[dict] = Field(default=None, description="Oauth configuration")
+
+    @field_validator("source_path")
+    @classmethod
+    def validate_source_path(cls, v: Optional[str]) -> Optional[str]:
+        """Validate source path if provided.
+
+        Args:
+            v: Source path value
+
+        Returns:
+            Validated source path or None
+
+        Raises:
+            ValueError: If source path is invalid
+        """
+        if v is None:
+            return v
+
+        # Convert to Path for validation
+        source_path = Path(v)
+
+        # Check if path exists
+        if not source_path.exists():
+            raise ValueError(f"Source path does not exist: {v}")
+
+        # Check if it's a directory
+        if not source_path.is_dir():
+            raise ValueError(f"Source path must be a directory: {v}")
+
+        # Return absolute path string
+        return str(source_path.resolve())
 
     def get_authorizer_configuration(self) -> Optional[dict]:
         """Get the authorizer configuration."""
