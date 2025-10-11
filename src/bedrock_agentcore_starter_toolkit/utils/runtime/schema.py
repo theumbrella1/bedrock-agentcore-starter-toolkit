@@ -16,7 +16,7 @@ class NetworkModeConfig(BaseModel):
 class MemoryConfig(BaseModel):
     """Memory configuration for BedrockAgentCore."""
 
-    mode: Literal["STM_ONLY", "STM_AND_LTM"] = Field(
+    mode: Literal["STM_ONLY", "STM_AND_LTM", "NO_MEMORY"] = Field(
         default="STM_ONLY", description="Memory mode - always has STM, optionally adds LTM"
     )
     memory_id: Optional[str] = Field(default=None, description="Memory resource ID")
@@ -26,11 +26,14 @@ class MemoryConfig(BaseModel):
     first_invoke_memory_check_done: bool = Field(
         default=False, description="Whether first invoke memory check has been performed"
     )
+    was_created_by_toolkit: bool = Field(
+        default=False, description="Whether memory was created by toolkit (vs reused existing)"
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """Check if memory is enabled (always true now)."""
-        return True
+        """Check if memory is enabled."""
+        return self.mode != "NO_MEMORY"
 
     @property
     def has_ltm(self) -> bool:
