@@ -895,7 +895,10 @@ class TestLocalBedrockAgentCoreClient:
             ) as mock_handle,
         ):
             result = client.invoke_endpoint(
-                session_id="test-session-123", payload='{"message": "hello"}', workload_access_token="test-token-456"
+                session_id="test-session-123",
+                payload='{"message": "hello"}',
+                workload_access_token="test-token-456",
+                oauth2_callback_url="http://local",
             )
 
             # Verify request was made correctly
@@ -946,7 +949,10 @@ class TestLocalBedrockAgentCoreClient:
         ):
             # Test with invalid JSON string
             client.invoke_endpoint(
-                session_id="session-456", payload="invalid json string", workload_access_token="token-123"
+                session_id="session-456",
+                payload="invalid json string",
+                workload_access_token="token-123",
+                oauth2_callback_url="http://local",
             )
 
             # Verify payload was wrapped
@@ -982,6 +988,7 @@ class TestLocalBedrockAgentCoreClient:
                 session_id="test-session-123",
                 payload='{"message": "hello"}',
                 workload_access_token="test-token-456",
+                oauth2_callback_url="http://local",
                 custom_headers=custom_headers,
             )
 
@@ -1032,6 +1039,7 @@ class TestLocalBedrockAgentCoreClient:
                 session_id="test-session-123",
                 payload='{"message": "hello"}',
                 workload_access_token="test-token-456",
+                oauth2_callback_url="http://local",
                 custom_headers={},
             )
 
@@ -1078,6 +1086,7 @@ class TestLocalBedrockAgentCoreClient:
                 session_id="test-session-123",
                 payload='{"message": "hello"}',
                 workload_access_token="test-token-456",
+                oauth2_callback_url="http://local",
                 custom_headers=None,
             )
 
@@ -1112,6 +1121,7 @@ class TestLocalBedrockAgentCoreClient:
                     session_id="test-session-123",
                     payload='{"message": "hello"}',
                     workload_access_token="test-token-456",
+                    oauth2_callback_url="http://local",
                 )
 
 
