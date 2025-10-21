@@ -1,10 +1,10 @@
 site_name: Amazon Bedrock AgentCore
 site_description: Documentation for Amazon Bedrock AgentCore, primitives for building and running AI agents
 site_dir: site
-site_url: "https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit"
+site_url: "https://aws.github.io/bedrock-agentcore-starter-toolkit"
 use_directory_urls: false
 
-repo_url: https://github.com/theumbrella1/bedrock-agentcore-starter-toolkit
+repo_url: https://github.com/aws/bedrock-agentcore-starter-toolkit
 
 theme:
   name: material
