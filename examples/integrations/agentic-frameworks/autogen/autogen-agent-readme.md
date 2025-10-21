@@ -1,4 +1,4 @@
-# AutoGen Agent with Bedrock AgentCore Integration
+AutoGen Agent with Bedrock AgentCore Integration
 
 | Information        | Details                            |
 | ------------------ | ---------------------------------- |

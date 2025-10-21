@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/runtime-with-tools-and-memory-cfn-deploy-bash-script.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/basic-runtime/basic-cfn-deploy-readme.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Runtime with tools and memory cfn deploy bash script - Amazon Bedrock AgentCore</title>
+        <title>Basic cfn deploy readme - Amazon Bedrock AgentCore</title>
       
     
     
@@ -76,6 +76,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#table-of-contents" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -112,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Runtime with tools and memory cfn deploy bash script
+              Basic cfn deploy readme
             
           </span>
         </div>
@@ -1646,6 +1651,200 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aws-account-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      AWS Account Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deployment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-using-the-deploy-script-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      Option 1: Using the Deploy Script (Recommended)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-using-aws-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Option 2: Using AWS CLI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-3-using-aws-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      Option 3: Using AWS Console
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deployment-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deployment Time
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-aws-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using AWS CLI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-aws-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using AWS Console
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Queries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cleanup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cleanup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-the-cleanup-script-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using the Cleanup Script (Recommended)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-aws-cli_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using AWS CLI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-aws-console_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using AWS Console
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1663,118 +1862,227 @@
   
 
 
-  <h1>Runtime with tools and memory cfn deploy bash script</h1>
+  <h1>Basic cfn deploy readme</h1>
 
-<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
-
-<span class="c1"># Deploy script for Weather Agent Runtime CloudFormation stack</span>
-<span class="c1"># This script deploys a complete weather agent with browser, code interpreter, and memory</span>
-
-<span class="nb">set</span><span class="w"> </span>-e
-
-<span class="c1"># Configuration</span>
-<span class="nv">STACK_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">weather</span><span class="p">-agent-demo</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="nv">REGION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">us</span><span class="p">-west-2</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="nv">TEMPLATE_FILE</span><span class="o">=</span><span class="s2">&quot;end-to-end-weather-agent.yaml&quot;</span>
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deploying Weather Agent Runtime&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-
-<span class="c1"># Check if template file exists</span>
-<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>!<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TEMPLATE_FILE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: Template file &#39;</span><span class="nv">$TEMPLATE_FILE</span><span class="s2">&#39; not found!&quot;</span>
-<span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<span class="k">fi</span>
-
-<span class="c1"># Deploy the CloudFormation stack</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating CloudFormation stack...&quot;</span>
-aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--template-body<span class="w"> </span>file://<span class="s2">&quot;</span><span class="nv">$TEMPLATE_FILE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--capabilities<span class="w"> </span>CAPABILITY_NAMED_IAM<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-
-<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="nv">$?</span><span class="w"> </span>-eq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack creation initiated successfully!&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for stack creation to complete...&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;This will take approximately 15-20 minutes...&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;(Building Docker image, deploying agent with browser, code interpreter, and memory)&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-
-<span class="w">    </span>aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-create-complete<span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="nv">$?</span><span class="w"> </span>-eq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack deployed successfully!&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Outputs:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>table<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Agent Runtime ID:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`AgentRuntimeId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Browser ID:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`BrowserId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Code Interpreter ID:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`CodeInterpreterId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Memory ID:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`MemoryId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Results Bucket:&quot;</span>
-<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`ResultsBucket`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;To delete this stack, run:&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  ./cleanup.sh </span><span class="nv">$STACK_NAME</span><span class="s2"> </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">    </span><span class="k">else</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✗ Stack creation failed or timed out&quot;</span>
-<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check the CloudFormation console for details&quot;</span>
-<span class="w">        </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<span class="w">    </span><span class="k">fi</span>
-<span class="k">else</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✗ Failed to initiate stack creation&quot;</span>
-<span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<span class="k">fi</span>
+<p>Basic AgentCore Runtime</p>
+<p>This CloudFormation template deploys a basic Amazon Bedrock AgentCore Runtime with a simple Strands agent. This is the simplest possible AgentCore deployment, perfect for getting started and understanding the core concepts without additional complexity.</p>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#deployment">Deployment</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#sample-queries">Sample Queries</a></li>
+<li><a href="#cleanup">Cleanup</a></li>
+<li><a href="#cost-estimate">Cost Estimate</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#-contributing">🤝 Contributing</a></li>
+<li><a href="#-license">📄 License</a></li>
+</ul>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This template creates a minimal AgentCore deployment that includes:</p>
+<ul>
+<li><strong>AgentCore Runtime</strong>: Hosts a simple Strands agent</li>
+<li><strong>ECR Repository</strong>: Stores the Docker container image</li>
+<li><strong>IAM Roles</strong>: Provides necessary permissions</li>
+<li><strong>CodeBuild Project</strong>: Automatically builds the ARM64 Docker image</li>
+<li><strong>Lambda Functions</strong>: Custom resources for automation</li>
+</ul>
+<p>This makes it ideal for:
+- Learning AgentCore basics
+- Quick prototyping
+- Understanding the core deployment pattern
+- Building a foundation before adding complexity</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p><img alt="Basic AgentCore Runtime Architecture" src="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/cloudformation/basic-runtime/architecture.png" /></p>
+<p>The architecture consists of:</p>
+<ul>
+<li><strong>User</strong>: Sends questions to the agent and receives responses</li>
+<li><strong>AWS CodeBuild</strong>: Builds the ARM64 Docker container image with the agent code</li>
+<li><strong>Amazon ECR Repository</strong>: Stores the container image</li>
+<li><strong>AgentCore Runtime</strong>: Hosts the Basic Agent container</li>
+<li><strong>Basic Agent</strong>: Simple Strands agent that processes user queries</li>
+<li>Invokes Amazon Bedrock LLMs to generate responses</li>
+<li><strong>IAM Roles</strong>: </li>
+<li>IAM role for CodeBuild (builds and pushes images)</li>
+<li>IAM role for Agent Execution (runtime permissions)</li>
+<li><strong>Amazon Bedrock LLMs</strong>: Provides the AI model capabilities for the agent</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<h3 id="aws-account-setup">AWS Account Setup<a class="headerlink" href="#aws-account-setup" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>AWS Account</strong>: You need an active AWS account with appropriate permissions</li>
+<li><a href="https://aws.amazon.com/account/">Create AWS Account</a></li>
+<li>
+<p><a href="https://aws.amazon.com/console/">AWS Console Access</a></p>
+</li>
+<li>
+<p><strong>AWS CLI</strong>: Install and configure AWS CLI with your credentials</p>
+</li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">Install AWS CLI</a></li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html">Configure AWS CLI</a></li>
+</ol>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure
 </code></pre></div>
+<ol>
+<li><strong>Bedrock Model Access</strong>: Enable access to Amazon Bedrock models in your AWS region</li>
+<li>Navigate to <a href="https://console.aws.amazon.com/bedrock/">Amazon Bedrock Console</a></li>
+<li>Go to "Model access" and request access to:<ul>
+<li>Anthropic Claude models (recommended: Claude 3.5 Sonnet or Claude 3 Haiku)</li>
+</ul>
+</li>
+<li>
+<p><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html">Bedrock Model Access Guide</a></p>
+</li>
+<li>
+<p><strong>Required Permissions</strong>: Your AWS user/role needs permissions for:</p>
+</li>
+<li>CloudFormation stack operations</li>
+<li>ECR repository management</li>
+<li>IAM role creation</li>
+<li>Lambda function creation</li>
+<li>CodeBuild project creation</li>
+<li>BedrockAgentCore resource creation</li>
+</ol>
+<h2 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h2>
+<h3 id="option-1-using-the-deploy-script-recommended">Option 1: Using the Deploy Script (Recommended)<a class="headerlink" href="#option-1-using-the-deploy-script-recommended" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Make the script executable</span>
+chmod<span class="w"> </span>+x<span class="w"> </span>deploy.sh
+
+<span class="c1"># Deploy the stack</span>
+./deploy.sh
+</code></pre></div>
+<p>The script will:
+1. Deploy the CloudFormation stack
+2. Wait for stack creation to complete
+3. Display the AgentCore Runtime ID</p>
+<h3 id="option-2-using-aws-cli">Option 2: Using AWS CLI<a class="headerlink" href="#option-2-using-aws-cli" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy the stack</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--template-body<span class="w"> </span>file://template.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--capabilities<span class="w"> </span>CAPABILITY_NAMED_IAM<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2
+
+<span class="c1"># Wait for stack creation</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-create-complete<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2
+
+<span class="c1"># Get the Runtime ID</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`AgentRuntimeId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>text
+</code></pre></div>
+<h3 id="option-3-using-aws-console">Option 3: Using AWS Console<a class="headerlink" href="#option-3-using-aws-console" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Navigate to <a href="https://console.aws.amazon.com/cloudformation/">CloudFormation Console</a></li>
+<li>Click "Create stack" → "With new resources"</li>
+<li>Upload the <code>template.yaml</code> file</li>
+<li>Enter stack name: <code>basic-agent-demo</code></li>
+<li>Review parameters (or use defaults)</li>
+<li>Check "I acknowledge that AWS CloudFormation might create IAM resources"</li>
+<li>Click "Create stack"</li>
+</ol>
+<h3 id="deployment-time">Deployment Time<a class="headerlink" href="#deployment-time" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Expected Duration</strong>: 10-15 minutes</li>
+<li><strong>Main Steps</strong>:</li>
+<li>Stack creation: ~2 minutes</li>
+<li>Docker image build (CodeBuild): ~8-10 minutes</li>
+<li>Runtime provisioning: ~2-3 minutes</li>
+</ul>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="using-aws-cli">Using AWS CLI<a class="headerlink" href="#using-aws-cli" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Get the Runtime ID from stack outputs</span>
+<span class="nv">RUNTIME_ID</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`AgentRuntimeId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>text<span class="k">)</span>
+
+<span class="c1"># Invoke the agent</span>
+aws<span class="w"> </span>bedrock-agentcore<span class="w"> </span>invoke-agent-runtime<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--agent-runtime-id<span class="w"> </span><span class="nv">$RUNTIME_ID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--qualifier<span class="w"> </span>DEFAULT<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--payload<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;What is 2+2?&quot;}&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>response.json
+
+<span class="c1"># View the response</span>
+cat<span class="w"> </span>response.json
+</code></pre></div>
+<h3 id="using-aws-console">Using AWS Console<a class="headerlink" href="#using-aws-console" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Navigate to <a href="https://console.aws.amazon.com/bedrock-agentcore/">Bedrock AgentCore Console</a></li>
+<li>Go to "Runtimes" in the left navigation</li>
+<li>Find your runtime (name starts with <code>basic_agent_demo_</code>)</li>
+<li>Click on the runtime name</li>
+<li>Click "Test" button</li>
+<li>Enter test payload:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span>
+<span class="p">}</span>
+</code></pre></div></li>
+<li>Click "Invoke"</li>
+</ol>
+<h2 id="sample-queries">Sample Queries<a class="headerlink" href="#sample-queries" title="Permanent link">&para;</a></h2>
+<p>Try these queries to test your basic agent:</p>
+<ol>
+<li>
+<p><strong>Simple Math</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>General Knowledge</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Explanation Request</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain what Amazon Bedrock is in simple terms&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Creative Task</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Write a haiku about cloud computing&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Reasoning</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If I have 5 apples and give away 2, how many do I have left?&quot;</span><span class="p">}</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="cleanup">Cleanup<a class="headerlink" href="#cleanup" title="Permanent link">&para;</a></h2>
+<h3 id="using-the-cleanup-script-recommended">Using the Cleanup Script (Recommended)<a class="headerlink" href="#using-the-cleanup-script-recommended" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Make the script executable</span>
+chmod<span class="w"> </span>+x<span class="w"> </span>cleanup.sh
+
+<span class="c1"># Delete the stack</span>
+./cleanup.sh
+</code></pre></div>
+<h3 id="using-aws-cli_1">Using AWS CLI<a class="headerlink" href="#using-aws-cli_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>cloudformation<span class="w"> </span>delete-stack<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2
+
+<span class="c1"># Wait for deletion to complete</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-delete-complete<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>basic-agent-demo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span>us-west-2
+</code></pre></div>
+<h3 id="using-aws-console_1">Using AWS Console<a class="headerlink" href="#using-aws-console_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Navigate to <a href="https://console.aws.amazon.com/cloudformation/">CloudFormation Console</a></li>
+<li>Select the <code>basic-agent-demo</code> stack</li>
+<li>Click "Delete"</li>
+<li>Confirm deletion</li>
+</ol>
 
 
 

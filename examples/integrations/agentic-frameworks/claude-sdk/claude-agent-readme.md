@@ -1,4 +1,4 @@
-# Claude Agent SDK with Bedrock AgentCore Integration
+Claude Agent SDK with Bedrock AgentCore Integration
 
 | Information        | Details                                              |
 | ------------------ | ---------------------------------------------------- |

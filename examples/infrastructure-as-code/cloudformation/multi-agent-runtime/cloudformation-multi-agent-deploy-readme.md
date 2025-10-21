@@ -1,4 +1,4 @@
-# Multi-Agent AgentCore Runtime
+Multi-Agent AgentCore Runtime
 
 This CloudFormation template demonstrates a multi-agent architecture where one agent (orchestrator) can invoke another agent (specialist) to handle complex tasks. This pattern is useful for building sophisticated AI systems with specialized capabilities.
 

@@ -1,4 +1,4 @@
-# LangGraph Agent with Bedrock AgentCore Integration
+LangGraph Agent with Bedrock AgentCore Integration
 
 | Information        | Details                            |
 | ------------------ | ---------------------------------- |

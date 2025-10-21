@@ -1,4 +1,4 @@
-# OpenAI Agents with Bedrock AgentCore Integration
+OpenAI Agents with Bedrock AgentCore Integration
 
 | Information        | Details                                               |
 | ------------------ | ----------------------------------------------------- |

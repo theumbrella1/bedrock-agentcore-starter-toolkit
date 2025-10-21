@@ -1,4 +1,4 @@
-# Basic AgentCore Runtime
+Basic AgentCore Runtime
 
 This CloudFormation template deploys a basic Amazon Bedrock AgentCore Runtime with a simple Strands agent. This is the simplest possible AgentCore deployment, perfect for getting started and understanding the core concepts without additional complexity.
 

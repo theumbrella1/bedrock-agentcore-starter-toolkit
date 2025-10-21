@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/basic-runtime/runtime-deploy-bash-script.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/cloudformation-deploy-with-tools-and-memory-bash-script.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Runtime deploy bash script - Amazon Bedrock AgentCore</title>
+        <title>Cloudformation deploy with tools and memory bash script - Amazon Bedrock AgentCore</title>
       
     
     
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Runtime deploy bash script
+              Cloudformation deploy with tools and memory bash script
             
           </span>
         </div>
@@ -1663,22 +1663,22 @@
   
 
 
-  <h1>Runtime deploy bash script</h1>
+  <h1>Cloudformation deploy with tools and memory bash script</h1>
 
 <div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
 
-<span class="c1"># Deploy script for Basic Agent Runtime CloudFormation stack</span>
-<span class="c1"># This script deploys a basic AgentCore Runtime with a simple Strands agent</span>
+<span class="c1"># Deploy script for Weather Agent Runtime CloudFormation stack</span>
+<span class="c1"># This script deploys a complete weather agent with browser, code interpreter, and memory</span>
 
 <span class="nb">set</span><span class="w"> </span>-e
 
 <span class="c1"># Configuration</span>
-<span class="nv">STACK_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">basic</span><span class="p">-agent-demo</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">STACK_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">weather</span><span class="p">-agent-demo</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="nv">REGION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">us</span><span class="p">-west-2</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="nv">TEMPLATE_FILE</span><span class="o">=</span><span class="s2">&quot;template.yaml&quot;</span>
+<span class="nv">TEMPLATE_FILE</span><span class="o">=</span><span class="s2">&quot;end-to-end-weather-agent.yaml&quot;</span>
 
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deploying Basic Agent Runtime&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deploying Weather Agent Runtime&quot;</span>
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
@@ -1704,7 +1704,8 @@ aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<sp
 <span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack creation initiated successfully!&quot;</span>
 <span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 <span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for stack creation to complete...&quot;</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;This will take approximately 10-15 minutes...&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;This will take approximately 15-20 minutes...&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;(Building Docker image, deploying agent with browser, code interpreter, and memory)&quot;</span>
 <span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 
 <span class="w">    </span>aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-create-complete<span class="w"> </span><span class="se">\</span>
@@ -1728,6 +1729,34 @@ aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<sp
 <span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`AgentRuntimeId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Browser ID:&quot;</span>
+<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`BrowserId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Code Interpreter ID:&quot;</span>
+<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`CodeInterpreterId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Memory ID:&quot;</span>
+<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`MemoryId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Results Bucket:&quot;</span>
+<span class="w">        </span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">            </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`ResultsBucket`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
 <span class="w">            </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
 <span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>

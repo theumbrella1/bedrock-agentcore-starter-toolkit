@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cdk/basic-runtime/basic-runtime-cdk-deploy-readme.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/cloudformation-deploy-with-mcp-tool-readme.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Basic AgentCore Runtime - CDK - Amazon Bedrock AgentCore</title>
+        <title>Cloudformation deploy with mcp tool readme - Amazon Bedrock AgentCore</title>
       
     
     
@@ -77,7 +77,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#basic-agentcore-runtime-cdk" class="md-skip">
+        <a href="#overview" class="md-skip">
           Skip to content
         </a>
       
@@ -117,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Basic AgentCore Runtime - CDK
+              Cloudformation deploy with mcp tool readme
             
           </span>
         </div>
@@ -1650,8 +1650,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1660,27 +1658,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#table-of-contents" class="md-nav__link">
-    <span class="md-ellipsis">
-      Table of Contents
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       Overview
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tutorial-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tutorial Details
+    </span>
+  </a>
+  
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       Architecture
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-gets-deployed" class="md-nav__link">
+    <span class="md-ellipsis">
+      What Gets Deployed
     </span>
   </a>
   
@@ -1693,13 +1715,40 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Prerequisites">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#aws-account-setup" class="md-nav__link">
+  <a href="#1-deploy-the-stack" class="md-nav__link">
     <span class="md-ellipsis">
-      AWS Account Setup
+      1. Deploy the Stack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-test-the-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Test the MCP Server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Cleanup
     </span>
   </a>
   
@@ -1711,37 +1760,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deployment" class="md-nav__link">
+  <a href="#understanding-the-components" class="md-nav__link">
     <span class="md-ellipsis">
-      Deployment
+      Understanding the Components
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Deployment">
+    <nav class="md-nav" aria-label="Understanding the Components">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#option-1-quick-deploy-recommended" class="md-nav__link">
+  <a href="#authentication-flow" class="md-nav__link">
     <span class="md-ellipsis">
-      Option 1: Quick Deploy (Recommended)
+      Authentication Flow
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#option-2-step-by-step" class="md-nav__link">
+  <a href="#mcp-server-implementation" class="md-nav__link">
     <span class="md-ellipsis">
-      Option 2: Step by Step
+      MCP Server Implementation
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#deployment-time" class="md-nav__link">
+  <a href="#docker-image-build" class="md-nav__link">
     <span class="md-ellipsis">
-      Deployment Time
+      Docker Image Build
     </span>
   </a>
   
@@ -1753,137 +1802,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
+  <a href="#additional-resources" class="md-nav__link">
     <span class="md-ellipsis">
-      Testing
+      Additional Resources
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Testing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-aws-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AWS CLI
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-aws-console" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AWS Console
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sample-queries" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sample Queries
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cleanup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Cleanup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Cleanup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-cdk-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using CDK (Recommended)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-aws-cli_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AWS CLI
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-aws-console_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using AWS Console
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      Troubleshooting
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cdk-bootstrap-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      CDK Bootstrap Required
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      Permission Issues
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#python-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      Python Dependencies
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#build-failures" class="md-nav__link">
-    <span class="md-ellipsis">
-      Build Failures
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1906,231 +1829,180 @@
   
 
 
-<h1 id="basic-agentcore-runtime-cdk">Basic AgentCore Runtime - CDK<a class="headerlink" href="#basic-agentcore-runtime-cdk" title="Permanent link">&para;</a></h1>
-<p>This CDK stack deploys a basic Amazon Bedrock AgentCore Runtime with a simple Strands agent. This is the simplest possible AgentCore deployment, perfect for getting started and understanding the core concepts without additional complexity.</p>
-<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#architecture">Architecture</a></li>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#deployment">Deployment</a></li>
-<li><a href="#testing">Testing</a></li>
-<li><a href="#sample-queries">Sample Queries</a></li>
-<li><a href="#cleanup">Cleanup</a></li>
-<li><a href="#troubleshooting">Troubleshooting</a></li>
-</ul>
+  <h1>Cloudformation deploy with mcp tool readme</h1>
+
+<p>Hosting MCP Server on AgentCore Runtime - CloudFormation</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>This CDK stack creates a minimal AgentCore deployment that includes:</p>
-<ul>
-<li><strong>AgentCore Runtime</strong>: Hosts a simple Strands agent</li>
-<li><strong>ECR Repository</strong>: Stores the Docker container image</li>
-<li><strong>IAM Roles</strong>: Provides necessary permissions</li>
-<li><strong>CodeBuild Project</strong>: Automatically builds the ARM64 Docker image</li>
-<li><strong>Lambda Functions</strong>: Custom resources for automation</li>
-<li><strong>S3 Assets</strong>: Source code packaging and deployment</li>
-</ul>
-<p>This makes it ideal for:
-- Learning AgentCore basics
-- Quick prototyping
-- Understanding the core deployment pattern
-- Building a foundation before adding complexity</p>
-<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p>This CloudFormation template deploys an MCP (Model Context Protocol) server on Amazon Bedrock AgentCore Runtime. It demonstrates how to host MCP tools on AgentCore Runtime using infrastructure as code, with automated deployment scripts for a streamlined experience.</p>
+<p>The template uses the Amazon Bedrock AgentCore Python SDK to wrap agent functions as an MCP server compatible with Amazon Bedrock AgentCore. It handles the MCP server details so you can focus on your agent's core functionality.</p>
+<p>When hosting tools, the Amazon Bedrock AgentCore Python SDK implements the <a href="https://modelcontextprotocol.io/specification/2025-06-18/basic/transports">Stateless Streamable HTTP</a> transport protocol with the <code>MCP-Session-Id</code> header for session isolation. Your MCP server will be hosted on port <code>8000</code> and provide one invocation path: the <code>mcp-POST</code> endpoint.</p>
+<h3 id="tutorial-details">Tutorial Details<a class="headerlink" href="#tutorial-details" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Information</th>
+<th style="text-align: left;">Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Tutorial type</td>
+<td style="text-align: left;">Hosting Tools</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tool type</td>
+<td style="text-align: left;">MCP server</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tutorial components</td>
+<td style="text-align: left;">CloudFormation, AgentCore Runtime, MCP server</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tutorial vertical</td>
+<td style="text-align: left;">Cross-vertical</td>
+</tr>
+<tr>
+<td style="text-align: left;">Example complexity</td>
+<td style="text-align: left;">Easy</td>
+</tr>
+<tr>
+<td style="text-align: left;">SDK used</td>
+<td style="text-align: left;">Amazon BedrockAgentCore Python SDK and MCP Client</td>
+</tr>
+</tbody>
+</table>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
+<p><img alt="MCP Server AgentCore Runtime Architecture" src="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/cloudformation/mcp-server-agentcore-runtime/architecture.png" /></p>
+<p>This CloudFormation template deploys a simple MCP server with 3 tools: <code>add_numbers</code>, <code>multiply_numbers</code>, and <code>greet_user</code>.</p>
 <p>The architecture consists of:</p>
 <ul>
-<li><strong>User</strong>: Sends questions to the agent and receives responses</li>
-<li><strong>AWS CodeBuild</strong>: Builds the ARM64 Docker container image with the agent code</li>
+<li><strong>User/MCP Client</strong>: Sends requests to the MCP server with JWT authentication</li>
+<li><strong>Amazon Cognito</strong>: Provides JWT-based authentication</li>
+<li>User Pool with pre-created test user (testuser/MyPassword123!)</li>
+<li>User Pool Client for application access</li>
+<li><strong>AWS CodeBuild</strong>: Builds the ARM64 Docker container image with the MCP server</li>
 <li><strong>Amazon ECR Repository</strong>: Stores the container image</li>
-<li><strong>AgentCore Runtime</strong>: Hosts the Basic Agent container</li>
-<li><strong>Basic Agent</strong>: Simple Strands agent that processes user queries</li>
-<li>Invokes Amazon Bedrock LLMs to generate responses</li>
+<li><strong>AgentCore Runtime</strong>: Hosts the MCP Server</li>
+<li><strong>MCP Server</strong>: Exposes three tools via HTTP transport<ul>
+<li><code>add_numbers</code>: Adds two numbers</li>
+<li><code>multiply_numbers</code>: Multiplies two numbers</li>
+<li><code>greet_user</code>: Greets a user by name</li>
+</ul>
+</li>
+<li>Validates JWT tokens from Cognito</li>
+<li>Processes MCP tool invocations</li>
 <li><strong>IAM Roles</strong>: </li>
 <li>IAM role for CodeBuild (builds and pushes images)</li>
-<li>IAM role for Agent Execution (runtime permissions)</li>
-<li><strong>Amazon Bedrock LLMs</strong>: Provides the AI model capabilities for the agent</li>
+<li>IAM role for AgentCore Runtime (runtime permissions)</li>
 </ul>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<h3 id="aws-account-setup">AWS Account Setup<a class="headerlink" href="#aws-account-setup" title="Permanent link">&para;</a></h3>
-<ol>
-<li><strong>AWS Account</strong>: You need an active AWS account with appropriate permissions</li>
-<li><a href="https://aws.amazon.com/account/">Create AWS Account</a></li>
-<li>
-<p><a href="https://aws.amazon.com/console/">AWS Console Access</a></p>
-</li>
-<li>
-<p><strong>AWS CLI</strong>: Install and configure AWS CLI with your credentials</p>
-</li>
-<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">Install AWS CLI</a></li>
-<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html">Configure AWS CLI</a></li>
-</ol>
-<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure
-</code></pre></div>
-<ol>
-<li>
-<p><strong>Python 3.10+</strong> and <strong>AWS CDK v2</strong> installed
-   <div class="highlight"><pre><span></span><code><span class="c1"># Install CDK</span>
-npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>aws-cdk
-
-<span class="c1"># Verify installation</span>
-cdk<span class="w"> </span>--version
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>CDK version 2.218.0 or later</strong> (for BedrockAgentCore support)</p>
-</li>
-<li>
-<p><strong>Bedrock Model Access</strong>: Enable access to Amazon Bedrock models in your AWS region</p>
-</li>
-<li>
-<p><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html">Bedrock Model Access Guide</a></p>
-</li>
-<li>
-<p><strong>Required Permissions</strong>: Your AWS user/role needs permissions for:</p>
-</li>
-<li>CloudFormation stack operations</li>
-<li>ECR repository management</li>
-<li>IAM role creation</li>
-<li>Lambda function creation</li>
-<li>CodeBuild project creation</li>
-<li>BedrockAgentCore resource creation</li>
-<li>S3 bucket operations (for CDK assets)</li>
-</ol>
-<h2 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h2>
-<h3 id="option-1-quick-deploy-recommended">Option 1: Quick Deploy (Recommended)<a class="headerlink" href="#option-1-quick-deploy-recommended" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Install dependencies</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-
-<span class="c1"># Bootstrap CDK (first time only)</span>
-cdk<span class="w"> </span>bootstrap
-
-<span class="c1"># Deploy</span>
-cdk<span class="w"> </span>deploy
-</code></pre></div>
-<h3 id="option-2-step-by-step">Option 2: Step by Step<a class="headerlink" href="#option-2-step-by-step" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># 1. Create and activate Python virtual environment</span>
-python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
-<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
-
-<span class="c1"># 2. Install Python dependencies</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-
-<span class="c1"># 2. Bootstrap CDK in your account/region (first time only)</span>
-cdk<span class="w"> </span>bootstrap
-
-<span class="c1"># 3. Synthesize the CloudFormation template (optional)</span>
-cdk<span class="w"> </span>synth
-
-<span class="c1"># 4. Deploy the stack</span>
-cdk<span class="w"> </span>deploy<span class="w"> </span>--require-approval<span class="w"> </span>never
-
-<span class="c1"># 5. Get outputs</span>
-cdk<span class="w"> </span>list
-</code></pre></div>
-<h3 id="deployment-time">Deployment Time<a class="headerlink" href="#deployment-time" title="Permanent link">&para;</a></h3>
+<h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Expected Duration</strong>: 3-5 minutes</li>
+<li><strong>One-Command Deployment</strong> - Automated scripts handle everything</li>
+<li><strong>Complete Infrastructure</strong> - Full infrastructure as code</li>
+<li><strong>Secure by Default</strong> - JWT authentication with Cognito</li>
+<li><strong>Automated Build</strong> - CodeBuild creates ARM64 Docker images</li>
+<li><strong>Easy Testing</strong> - Automated test script included</li>
+<li><strong>Simple Cleanup</strong> - One command removes all resources</li>
 </ul>
-<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
-<h3 id="using-aws-cli">Using AWS CLI<a class="headerlink" href="#using-aws-cli" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Get the Runtime ARN from CDK outputs</span>
-<span class="nv">RUNTIME_ARN</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span>BasicAgentDemo<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span>us-east-1<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`AgentRuntimeArn`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span>text<span class="k">)</span>
-
-<span class="c1"># Invoke the agent</span>
-aws<span class="w"> </span>bedrock-agentcore<span class="w"> </span>invoke-agent-runtime<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--agent-runtime-arn<span class="w"> </span><span class="nv">$RUNTIME_ARN</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--qualifier<span class="w"> </span>DEFAULT<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--payload<span class="w"> </span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;What is 2+2?&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>response.json
-
-<span class="c1"># View the response</span>
-cat<span class="w"> </span>response.json
+<h2 id="what-gets-deployed">What Gets Deployed<a class="headerlink" href="#what-gets-deployed" title="Permanent link">&para;</a></h2>
+<p>The CloudFormation stack creates:</p>
+<ul>
+<li><strong>Amazon ECR Repository</strong> - Stores the MCP server Docker image</li>
+<li><strong>AWS CodeBuild Project</strong> - Builds ARM64 Docker image automatically  </li>
+<li><strong>Amazon Cognito User Pool</strong> - JWT authentication</li>
+<li><strong>Cognito User Pool Client</strong> - Application client configuration</li>
+<li><strong>Cognito User</strong> - Pre-created test user (testuser/MyPassword123!)</li>
+<li><strong>IAM Roles</strong> - Least-privilege permissions for all services</li>
+<li><strong>Lambda Functions</strong> - Custom resource automation</li>
+<li><strong>Amazon Bedrock AgentCore Runtime</strong> - Hosts the MCP server</li>
+</ul>
+<p><strong>MCP Server Tools</strong>:
+- <code>add_numbers</code> - Adds two numbers together
+- <code>multiply_numbers</code> - Multiplies two numbers<br />
+- <code>greet_user</code> - Greets a user by name</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>AWS CLI configured with appropriate credentials</li>
+<li>AWS account with permissions to create:</li>
+<li>CloudFormation stacks</li>
+<li>ECR repositories</li>
+<li>CodeBuild projects</li>
+<li>Cognito User Pools</li>
+<li>IAM roles and policies</li>
+<li>Lambda functions</li>
+<li>Bedrock AgentCore Runtime</li>
+<li>Python 3.8+ (for testing)</li>
+<li><code>boto3</code> and <code>mcp</code> Python packages (installed automatically by test script)</li>
+</ul>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<h3 id="1-deploy-the-stack">1. Deploy the Stack<a class="headerlink" href="#1-deploy-the-stack" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span><span class="m">04</span>-infrastructure-as-code/cloudformation/mcp-server-agentcore-runtime
+./deploy.sh
 </code></pre></div>
-<h3 id="using-aws-console">Using AWS Console<a class="headerlink" href="#using-aws-console" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Navigate to <a href="https://console.aws.amazon.com/bedrock-agentcore/">Bedrock AgentCore Console</a></li>
-<li>Go to "Runtimes" in the left navigation</li>
-<li>Find your runtime (name starts with <code>BasicAgentDemo_</code>)</li>
-<li>Click on the runtime name</li>
-<li>Click "Test" button</li>
-<li>Enter test payload:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span>
-<span class="p">}</span>
-</code></pre></div></li>
-<li>Click "Invoke"</li>
-</ol>
-<h2 id="sample-queries">Sample Queries<a class="headerlink" href="#sample-queries" title="Permanent link">&para;</a></h2>
-<p>Try these queries to test your basic agent:</p>
-<ol>
-<li>
-<p><strong>Simple Math</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>General Knowledge</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Explanation Request</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain what Amazon Bedrock is in simple terms&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Creative Task</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Write a haiku about cloud computing&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Reasoning</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If I have 5 apples and give away 2, how many do I have left?&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-</ol>
-<h2 id="cleanup">Cleanup<a class="headerlink" href="#cleanup" title="Permanent link">&para;</a></h2>
-<h3 id="using-cdk-recommended">Using CDK (Recommended)<a class="headerlink" href="#using-cdk-recommended" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>cdk<span class="w"> </span>destroy
+<p>The deployment takes approximately <strong>10-15 minutes</strong> and includes:
+- Creating all AWS resources
+- Building the Docker image
+- Pushing to ECR
+- Starting the AgentCore Runtime</p>
+<h3 id="2-test-the-mcp-server">2. Test the MCP Server<a class="headerlink" href="#2-test-the-mcp-server" title="Permanent link">&para;</a></h3>
+<p>After deployment completes:</p>
+<div class="highlight"><pre><span></span><code>./test.sh
 </code></pre></div>
-<h3 id="using-aws-cli_1">Using AWS CLI<a class="headerlink" href="#using-aws-cli_1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>cloudformation<span class="w"> </span>delete-stack<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span>BasicAgentDemo<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span>us-east-1
+<p>This will:
+- Authenticate with Cognito
+- Test all three MCP tools
+- Display the results</p>
+<h3 id="3-cleanup">3. Cleanup<a class="headerlink" href="#3-cleanup" title="Permanent link">&para;</a></h3>
+<p>When you're done:</p>
+<div class="highlight"><pre><span></span><code>./cleanup.sh
+</code></pre></div>
+<p>This removes all created resources.</p>
+<h2 id="understanding-the-components">Understanding the Components<a class="headerlink" href="#understanding-the-components" title="Permanent link">&para;</a></h2>
+<h4 id="authentication-flow">Authentication Flow<a class="headerlink" href="#authentication-flow" title="Permanent link">&para;</a></h4>
+<ol>
+<li>User authenticates with Cognito using username/password</li>
+<li>Cognito returns an access token (JWT)</li>
+<li>Access token is passed as Bearer token to AgentCore Runtime</li>
+<li>AgentCore Runtime validates the token with Cognito</li>
+<li>If valid, the MCP server processes the request</li>
+</ol>
+<h4 id="mcp-server-implementation">MCP Server Implementation<a class="headerlink" href="#mcp-server-implementation" title="Permanent link">&para;</a></h4>
+<p>The MCP server is embedded in the CodeBuild buildspec and includes:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bedrock_agentcore.mcp</span><span class="w"> </span><span class="kn">import</span> <span class="n">MCPServer</span>
 
-<span class="c1"># Wait for deletion to complete</span>
-aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-delete-complete<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span>BasicAgentDemo<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span>us-east-1
+<span class="n">server</span> <span class="o">=</span> <span class="n">MCPServer</span><span class="p">()</span>
+
+<span class="nd">@server</span><span class="o">.</span><span class="n">tool</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_numbers</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add two numbers together.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+
+<span class="nd">@server</span><span class="o">.</span><span class="n">tool</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">multiply_numbers</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multiply two numbers together.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+
+<span class="nd">@server</span><span class="o">.</span><span class="n">tool</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">greet_user</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Greet a user by name.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Hello, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">!&quot;</span>
 </code></pre></div>
-<h3 id="using-aws-console_1">Using AWS Console<a class="headerlink" href="#using-aws-console_1" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Navigate to <a href="https://console.aws.amazon.com/cloudformation/">CloudFormation Console</a></li>
-<li>Select the <code>BasicAgentDemo</code> stack</li>
-<li>Click "Delete"</li>
-<li>Confirm deletion</li>
-</ol>
-<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="cdk-bootstrap-required">CDK Bootstrap Required<a class="headerlink" href="#cdk-bootstrap-required" title="Permanent link">&para;</a></h3>
-<p>If you see bootstrap errors:
-<div class="highlight"><pre><span></span><code>cdk<span class="w"> </span>bootstrap<span class="w"> </span>aws://ACCOUNT-NUMBER/REGION
-</code></pre></div></p>
-<h3 id="permission-issues">Permission Issues<a class="headerlink" href="#permission-issues" title="Permanent link">&para;</a></h3>
-<p>Ensure your IAM user/role has:
-- <code>CDKToolkit</code> permissions or equivalent
-- Permissions to create all resources in the stack
-- <code>iam:PassRole</code> for service roles</p>
-<h3 id="python-dependencies">Python Dependencies<a class="headerlink" href="#python-dependencies" title="Permanent link">&para;</a></h3>
-<p>Install dependencies in the project directory:
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</code></pre></div></p>
-<h3 id="build-failures">Build Failures<a class="headerlink" href="#build-failures" title="Permanent link">&para;</a></h3>
-<p>Check CodeBuild logs in the AWS Console:
-1. Go to CodeBuild console
-2. Find the build project (name contains "basic-agent-build")
-3. Check build history and logs</p>
+<h4 id="docker-image-build">Docker Image Build<a class="headerlink" href="#docker-image-build" title="Permanent link">&para;</a></h4>
+<p>CodeBuild automatically:
+1. Creates a Python 3.12 ARM64 environment
+2. Installs dependencies
+3. Creates the MCP server code
+4. Builds the Docker image
+5. Pushes to ECR
+6. Triggers AgentCore Runtime update</p>
+<h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore.html">Amazon Bedrock AgentCore Documentation</a></li>
+<li><a href="https://modelcontextprotocol.io/">Model Context Protocol Specification</a></li>
+<li><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/AWS_BedrockAgentCore.html">CloudFormation Template Reference</a></li>
+<li><a href="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/01-tutorials/01-AgentCore-runtime/02-hosting-MCP-server/">Original Tutorial</a></li>
+<li><a href="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/cloudformation/mcp-server-agentcore-runtime/DETAILED_GUIDE.md">Detailed Technical Guide</a></li>
+</ul>
 
 
 

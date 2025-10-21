@@ -1,4 +1,4 @@
-# Hosting MCP Server on AgentCore Runtime - CloudFormation
+Hosting MCP Server on AgentCore Runtime - CloudFormation
 
 ## Overview
 

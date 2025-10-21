@@ -1,4 +1,4 @@
-# ADK Agent with Bedrock AgentCore Integration
+ADK Agent with Bedrock AgentCore Integration
 
 | Information        | Details                             |
 | ------------------ | ----------------------------------- |

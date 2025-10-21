@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/runtime-with-tools-and-memory-cfn-template.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/cloudformation-deploy-with-mcp-tool-template.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Runtime with tools and memory cfn template - Amazon Bedrock AgentCore</title>
+        <title>Cloudformation deploy with mcp tool template - Amazon Bedrock AgentCore</title>
       
     
     
@@ -76,6 +76,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#get_tokenpy" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -112,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Runtime with tools and memory cfn template
+              Cloudformation deploy with mcp tool template
             
           </span>
         </div>
@@ -1646,6 +1651,23 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#get_tokenpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_token.py
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1663,10 +1685,10 @@
   
 
 
-  <h1>Runtime with tools and memory cfn template</h1>
+  <h1>Cloudformation deploy with mcp tool template</h1>
 
 <div class="highlight"><pre><span></span><code><span class="nt">AWSTemplateFormatVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2010-09-09&quot;</span>
-<span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Complete</span><span class="nv"> </span><span class="s">AgentCore</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">-</span><span class="nv"> </span><span class="s">Single</span><span class="nv"> </span><span class="s">stack</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">modular</span><span class="nv"> </span><span class="s">organization&quot;</span>
+<span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MCP</span><span class="nv"> </span><span class="s">Server</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">AgentCore</span><span class="nv"> </span><span class="s">Runtime</span><span class="nv"> </span><span class="s">-</span><span class="nv"> </span><span class="s">Deploy</span><span class="nv"> </span><span class="s">an</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">custom</span><span class="nv"> </span><span class="s">tools</span><span class="nv"> </span><span class="s">(add_numbers,</span><span class="nv"> </span><span class="s">multiply_numbers,</span><span class="nv"> </span><span class="s">greet_user)&quot;</span>
 
 <span class="c1"># ============================================================================</span>
 <span class="c1"># PARAMETERS SECTION</span>
@@ -1675,8 +1697,8 @@
 <span class="w">  </span><span class="c1"># Agent Configuration</span>
 <span class="w">  </span><span class="nt">AgentName</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">String</span>
-<span class="w">    </span><span class="nt">Default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;TestAgent&quot;</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">runtime&quot;</span>
+<span class="w">    </span><span class="nt">Default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MCPServerAgent&quot;</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">runtime&quot;</span>
 <span class="w">    </span><span class="nt">AllowedPattern</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;^[a-zA-Z][a-zA-Z0-9_]{0,47}$&quot;</span>
 <span class="w">    </span><span class="nt">ConstraintDescription</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Must</span><span class="nv"> </span><span class="s">start</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">letter,</span><span class="nv"> </span><span class="s">max</span><span class="nv"> </span><span class="s">48</span><span class="nv"> </span><span class="s">characters,</span><span class="nv"> </span><span class="s">alphanumeric</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">underscores</span><span class="nv"> </span><span class="s">only&quot;</span>
 
@@ -1698,16 +1720,8 @@
 <span class="w">  </span><span class="c1"># ECR Configuration</span>
 <span class="w">  </span><span class="nt">ECRRepositoryName</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">String</span>
-<span class="w">    </span><span class="nt">Default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;agent-cfn-weather&quot;</span>
+<span class="w">    </span><span class="nt">Default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mcp-server&quot;</span>
 <span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">ECR</span><span class="nv"> </span><span class="s">repository&quot;</span>
-
-<span class="w">  </span><span class="c1"># Memory Configuration</span>
-<span class="w">  </span><span class="nt">MemoryName</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">String</span>
-<span class="w">    </span><span class="nt">Default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;TestAgentCoreMemoryWeather&quot;</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">AgentCore</span><span class="nv"> </span><span class="s">memory</span><span class="nv"> </span><span class="s">resource&quot;</span>
-<span class="w">    </span><span class="nt">AllowedPattern</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;^[a-zA-Z][a-zA-Z0-9_]{0,47}$&quot;</span>
-<span class="w">    </span><span class="nt">ConstraintDescription</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Must</span><span class="nv"> </span><span class="s">start</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">letter,</span><span class="nv"> </span><span class="s">max</span><span class="nv"> </span><span class="s">48</span><span class="nv"> </span><span class="s">characters,</span><span class="nv"> </span><span class="s">alphanumeric</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">underscores</span><span class="nv"> </span><span class="s">only&quot;</span>
 
 <span class="c1"># ============================================================================</span>
 <span class="c1"># METADATA SECTION</span>
@@ -1725,10 +1739,6 @@
 <span class="w">        </span><span class="nt">Parameters</span><span class="p">:</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECRRepositoryName</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ImageTag</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Label</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Memory</span><span class="nv"> </span><span class="s">Configuration&quot;</span>
-<span class="w">        </span><span class="nt">Parameters</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MemoryName</span>
 <span class="w">    </span><span class="nt">ParameterLabels</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">AgentName</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Agent</span><span class="nv"> </span><span class="s">Name&quot;</span>
@@ -1738,11 +1748,9 @@
 <span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ECR</span><span class="nv"> </span><span class="s">Repository</span><span class="nv"> </span><span class="s">Name&quot;</span>
 <span class="w">      </span><span class="nt">ImageTag</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Image</span><span class="nv"> </span><span class="s">Tag&quot;</span>
-<span class="w">      </span><span class="nt">MemoryName</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Memory</span><span class="nv"> </span><span class="s">Name&quot;</span>
 
 <span class="c1"># ============================================================================</span>
-<span class="c1"># RESOURCES SECTION - ORGANIZED BY MODULE</span>
+<span class="c1"># RESOURCES SECTION</span>
 <span class="c1"># ============================================================================</span>
 <span class="nt">Resources</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># ========================================================================</span>
@@ -1778,27 +1786,56 @@
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECR</span>
 
 <span class="w">  </span><span class="c1"># ========================================================================</span>
-<span class="w">  </span><span class="c1"># S3 MODULE - Results Storage</span>
+<span class="w">  </span><span class="c1"># COGNITO MODULE - Authentication</span>
 <span class="w">  </span><span class="c1"># ========================================================================</span>
 
-<span class="w">  </span><span class="nt">ResultsBucket</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::S3::Bucket</span>
+<span class="w">  </span><span class="nt">CognitoUserPool</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::Cognito::UserPool</span>
 <span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">BucketName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-results-${AWS::AccountId}&quot;</span>
-<span class="w">      </span><span class="nt">PublicAccessBlockConfiguration</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">BlockPublicAcls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">BlockPublicPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">IgnorePublicAcls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">RestrictPublicBuckets</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">VersioningConfiguration</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">Status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Enabled</span>
-<span class="w">      </span><span class="nt">Tags</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
-<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-results-bucket&quot;</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StackName</span>
-<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::StackName</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Module</span>
-<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">S3</span>
+<span class="w">      </span><span class="nt">UserPoolName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-user-pool&quot;</span>
+<span class="w">      </span><span class="nt">Policies</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">PasswordPolicy</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">MinimumLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">          </span><span class="nt">RequireUppercase</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">          </span><span class="nt">RequireLowercase</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">          </span><span class="nt">RequireNumbers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">          </span><span class="nt">RequireSymbols</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">Schema</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">          </span><span class="nt">AttributeDataType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">String</span>
+<span class="w">          </span><span class="nt">Required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">          </span><span class="nt">Mutable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">UserPoolTags</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-user-pool&quot;</span>
+<span class="w">        </span><span class="nt">StackName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::StackName</span>
+<span class="w">        </span><span class="nt">Module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Cognito</span>
+
+<span class="w">  </span><span class="nt">CognitoUserPoolClient</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::Cognito::UserPoolClient</span>
+<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">ClientName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-client&quot;</span>
+<span class="w">      </span><span class="nt">UserPoolId</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPool</span>
+<span class="w">      </span><span class="nt">GenerateSecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">ExplicitAuthFlows</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ALLOW_USER_PASSWORD_AUTH</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ALLOW_REFRESH_TOKEN_AUTH</span>
+<span class="w">      </span><span class="nt">PreventUserExistenceErrors</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ENABLED</span>
+
+<span class="w">  </span><span class="nt">CognitoUser</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::Cognito::UserPoolUser</span>
+<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">UserPoolId</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPool</span>
+<span class="w">      </span><span class="nt">Username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testuser</span>
+<span class="w">      </span><span class="nt">MessageAction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SUPPRESS</span>
+
+<span class="w">  </span><span class="nt">SetCognitoUserPassword</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Custom::CognitoSetPassword</span>
+<span class="w">    </span><span class="nt">DependsOn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUser</span>
+<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">ServiceToken</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoPasswordSetterFunction.Arn</span>
+<span class="w">      </span><span class="nt">UserPoolId</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPool</span>
+<span class="w">      </span><span class="nt">Username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testuser</span>
+<span class="w">      </span><span class="nt">Password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyPassword123!</span>
 
 <span class="w">  </span><span class="c1"># ========================================================================</span>
 <span class="w">  </span><span class="c1"># IAM MODULE - Security and Permissions</span>
@@ -1865,28 +1902,6 @@
 <span class="w">                </span><span class="nt">Condition</span><span class="p">:</span>
 <span class="w">                  </span><span class="nt">StringEquals</span><span class="p">:</span>
 <span class="w">                    </span><span class="nt">cloudwatch:namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GetAgentAccessToken</span>
-<span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
-<span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:GetWorkloadAccessToken</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:GetWorkloadAccessTokenForJWT</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:GetWorkloadAccessTokenForUserId</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;arn:aws:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:workload-identity-directory/default&quot;</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;arn:aws:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:workload-identity-directory/default/workload-identity/*&quot;</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BedrockModelInvocation</span>
-<span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
-<span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock:InvokeModel</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock:InvokeModelWithResponseStream</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">S3ResultsAccess</span>
-<span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
-<span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3:PutObject</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3:GetObject</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3:DeleteObject</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${ResultsBucket.Arn}/*&quot;</span>
 <span class="w">      </span><span class="nt">Tags</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-agent-execution-role&quot;</span>
@@ -1960,33 +1975,18 @@
 <span class="w">          </span><span class="nt">PolicyDocument</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">Version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2012-10-17&quot;</span>
 <span class="w">            </span><span class="nt">Statement</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECRAccess</span>
-<span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
-<span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:ListImages</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:BatchDeleteImage</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:GetAuthorizationToken</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:BatchGetImage</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:GetDownloadUrlForLayer</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:PutImage</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:InitiateLayerUpload</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:UploadLayerPart</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ecr:CompleteLayerUpload</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECRRepository.Arn</span>
 <span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeBuildAccess</span>
 <span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
 <span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
 <span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">codebuild:StartBuild</span>
 <span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">codebuild:BatchGetBuilds</span>
 <span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">codebuild:BatchGetProjects</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentImageBuildProject.Arn</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BedrockAgentCoreMemoryAccess</span>
+<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCPServerImageBuildProject.Arn</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Sid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoAccess</span>
 <span class="w">                </span><span class="nt">Effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allow</span>
 <span class="w">                </span><span class="nt">Action</span><span class="p">:</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:CreateEvent</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:ListEvents</span>
-<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bedrock-agentcore:GetMemory</span>
-<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
+<span class="w">                  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cognito-idp:AdminSetUserPassword</span>
+<span class="w">                </span><span class="nt">Resource</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPool.Arn</span>
 <span class="w">      </span><span class="nt">Tags</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-custom-resource-role&quot;</span>
@@ -2033,10 +2033,8 @@
 <span class="w">                  </span><span class="no">logger.info(f&quot;Attempting to start CodeBuild project: {project_name}&quot;)</span>
 <span class="w">                  </span><span class="no">logger.info(f&quot;Wait for completion: {wait_for_completion}&quot;)</span>
 
-<span class="w">                  </span><span class="no"># Start the CodeBuild project</span>
 <span class="w">                  </span><span class="no">codebuild = boto3.client(&#39;codebuild&#39;)</span>
 
-<span class="w">                  </span><span class="no"># First, verify the project exists</span>
 <span class="w">                  </span><span class="no">try:</span>
 <span class="w">                      </span><span class="no">project_info = codebuild.batch_get_projects(names=[project_name])</span>
 <span class="w">                      </span><span class="no">if not project_info[&#39;projects&#39;]:</span>
@@ -2058,8 +2056,7 @@
 <span class="w">                      </span><span class="no">})</span>
 <span class="w">                      </span><span class="no">return</span>
 
-<span class="w">                  </span><span class="no"># Wait for the build to complete</span>
-<span class="w">                  </span><span class="no">max_wait_time = context.get_remaining_time_in_millis() / 1000 - 30  # Leave 30s buffer</span>
+<span class="w">                  </span><span class="no">max_wait_time = context.get_remaining_time_in_millis() / 1000 - 30</span>
 <span class="w">                  </span><span class="no">start_time = time.time()</span>
 
 <span class="w">                  </span><span class="no">while True:</span>
@@ -2083,7 +2080,6 @@
 <span class="w">                          </span><span class="no">error_message = f&quot;Build {build_id} failed with status: {build_status}&quot;</span>
 <span class="w">                          </span><span class="no">logger.error(error_message)</span>
 
-<span class="w">                          </span><span class="no"># Get build logs for debugging</span>
 <span class="w">                          </span><span class="no">try:</span>
 <span class="w">                              </span><span class="no">logs_info = build_response[&#39;builds&#39;][0].get(&#39;logs&#39;, {})</span>
 <span class="w">                              </span><span class="no">if logs_info.get(&#39;groupName&#39;) and logs_info.get(&#39;streamName&#39;):</span>
@@ -2098,7 +2094,7 @@
 <span class="w">                          </span><span class="no">return</span>
 
 <span class="w">                      </span><span class="no">logger.info(f&quot;Build {build_id} status: {build_status}&quot;)</span>
-<span class="w">                      </span><span class="no">time.sleep(30)  # Check every 30 seconds</span>
+<span class="w">                      </span><span class="no">time.sleep(30)</span>
 
 <span class="w">              </span><span class="no">except Exception as e:</span>
 <span class="w">                  </span><span class="no">logger.error(&#39;Error: %s&#39;, str(e))</span>
@@ -2113,11 +2109,11 @@
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Module</span>
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Lambda</span>
 
-<span class="w">  </span><span class="nt">MemoryInitializerFunction</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">CognitoPasswordSetterFunction</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::Lambda::Function</span>
 <span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">FunctionName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-memory-initializer&quot;</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Initializes</span><span class="nv"> </span><span class="s">AgentCore</span><span class="nv"> </span><span class="s">Memory</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">default</span><span class="nv"> </span><span class="s">entries</span><span class="nv"> </span><span class="s">after</span><span class="nv"> </span><span class="s">memory</span><span class="nv"> </span><span class="s">creation&quot;</span>
+<span class="w">      </span><span class="nt">FunctionName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-cognito-password-setter&quot;</span>
+<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Sets</span><span class="nv"> </span><span class="s">Cognito</span><span class="nv"> </span><span class="s">user</span><span class="nv"> </span><span class="s">password&quot;</span>
 <span class="w">      </span><span class="nt">Handler</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">index.handler</span>
 <span class="w">      </span><span class="nt">Role</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CustomResourceRole.Arn</span>
 <span class="w">      </span><span class="nt">Runtime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python3.9</span>
@@ -2128,8 +2124,6 @@
 <span class="w">          </span><span class="no">import cfnresponse</span>
 <span class="w">          </span><span class="no">import json</span>
 <span class="w">          </span><span class="no">import logging</span>
-<span class="w">          </span><span class="no">import time</span>
-<span class="w">          </span><span class="no">from datetime import datetime</span>
 
 <span class="w">          </span><span class="no">logger = logging.getLogger()</span>
 <span class="w">          </span><span class="no">logger.setLevel(logging.INFO)</span>
@@ -2139,54 +2133,37 @@
 
 <span class="w">              </span><span class="no">try:</span>
 <span class="w">                  </span><span class="no">if event[&#39;RequestType&#39;] == &#39;Delete&#39;:</span>
-<span class="w">                      </span><span class="no"># No cleanup needed for memory entries</span>
 <span class="w">                      </span><span class="no">cfnresponse.send(event, context, cfnresponse.SUCCESS, {})</span>
 <span class="w">                      </span><span class="no">return</span>
 
-<span class="w">                  </span><span class="no">memory_id = event[&#39;ResourceProperties&#39;][&#39;MemoryId&#39;]</span>
-<span class="w">                  </span><span class="no">region = event[&#39;ResourceProperties&#39;].get(&#39;Region&#39;, &#39;us-west-2&#39;)</span>
-<span class="w">                  </span><span class="no">timestamp = datetime.utcnow().isoformat() + &#39;Z&#39;</span>
+<span class="w">                  </span><span class="no">user_pool_id = event[&#39;ResourceProperties&#39;][&#39;UserPoolId&#39;]</span>
+<span class="w">                  </span><span class="no">username = event[&#39;ResourceProperties&#39;][&#39;Username&#39;]</span>
+<span class="w">                  </span><span class="no">password = event[&#39;ResourceProperties&#39;][&#39;Password&#39;]</span>
 
-<span class="w">                  </span><span class="no">logger.info(f&quot;Initializing memory entries for Memory ID: {memory_id}&quot;)</span>
+<span class="w">                  </span><span class="no">cognito = boto3.client(&#39;cognito-idp&#39;)</span>
 
-<span class="w">                  </span><span class="no">activity_preferences = {</span>
-<span class="w">                      </span><span class="no">&quot;good_weather&quot;: [&quot;hiking&quot;, &quot;beach volleyball&quot;, &quot;outdoor picnic&quot;, &quot;farmers market&quot;, &quot;gardening&quot;, &quot;photography&quot;, &quot;bird watching&quot;],</span>
-<span class="w">                      </span><span class="no">&quot;ok_weather&quot;: [&quot;walking tours&quot;, &quot;outdoor dining&quot;, &quot;park visits&quot;, &quot;museums&quot;],</span>
-<span class="w">                      </span><span class="no">&quot;poor_weather&quot;: [&quot;indoor museums&quot;, &quot;shopping&quot;, &quot;restaurants&quot;, &quot;movies&quot;]</span>
-<span class="w">                  </span><span class="no">}</span>
-
-<span class="w">                  </span><span class="no"># Convert the dictionary to a JSON string for storage in the blob</span>
-<span class="w">                  </span><span class="no">activity_preferences_json = json.dumps(activity_preferences)</span>
-
-<span class="w">                  </span><span class="no"># Initialize the bedrock-agentcore client</span>
-<span class="w">                  </span><span class="no">client = boto3.client(&#39;bedrock-agentcore&#39;, region_name=region)</span>
-
-<span class="w">                  </span><span class="no">response = client.create_event(</span>
-<span class="w">                      </span><span class="no">memoryId=memory_id,</span>
-<span class="w">                      </span><span class="no">actorId=&quot;user123&quot;,</span>
-<span class="w">                      </span><span class="no">sessionId=&quot;session456&quot;,</span>
-<span class="w">                      </span><span class="no">eventTimestamp=timestamp,</span>
-<span class="w">                      </span><span class="no">payload=[</span>
-<span class="w">                          </span><span class="no">{</span>
-<span class="w">                              </span><span class="no">&#39;blob&#39;: activity_preferences_json,</span>
-<span class="w">                          </span><span class="no">}</span>
-<span class="w">                      </span><span class="no">]</span>
+<span class="w">                  </span><span class="no"># Set permanent password</span>
+<span class="w">                  </span><span class="no">cognito.admin_set_user_password(</span>
+<span class="w">                      </span><span class="no">UserPoolId=user_pool_id,</span>
+<span class="w">                      </span><span class="no">Username=username,</span>
+<span class="w">                      </span><span class="no">Password=password,</span>
+<span class="w">                      </span><span class="no">Permanent=True</span>
 <span class="w">                  </span><span class="no">)</span>
-<span class="w">                  </span><span class="no">logger.info(f&quot;Successfully created memory event: {response}&quot;)</span>
+
+<span class="w">                  </span><span class="no">logger.info(f&quot;Password set successfully for user: {username}&quot;)</span>
 
 <span class="w">                  </span><span class="no">cfnresponse.send(event, context, cfnresponse.SUCCESS, {</span>
-<span class="w">                      </span><span class="no">&#39;MemoryId&#39;: memory_id,</span>
-<span class="w">                      </span><span class="no">&#39;Status&#39;: &#39;INITIALIZED&#39;</span>
+<span class="w">                      </span><span class="no">&#39;Status&#39;: &#39;SUCCESS&#39;</span>
 <span class="w">                  </span><span class="no">})</span>
 
 <span class="w">              </span><span class="no">except Exception as e:</span>
-<span class="w">                  </span><span class="no">logger.error(&#39;Error initializing memory: %s&#39;, str(e))</span>
+<span class="w">                  </span><span class="no">logger.error(&#39;Error: %s&#39;, str(e))</span>
 <span class="w">                  </span><span class="no">cfnresponse.send(event, context, cfnresponse.FAILED, {</span>
 <span class="w">                      </span><span class="no">&#39;Error&#39;: str(e)</span>
 <span class="w">                  </span><span class="no">})</span>
 <span class="w">      </span><span class="nt">Tags</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
-<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-memory-initializer&quot;</span>
+<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-cognito-password-setter&quot;</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StackName</span>
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::StackName</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Module</span>
@@ -2196,11 +2173,11 @@
 <span class="w">  </span><span class="c1"># CODEBUILD MODULE - Container Image Building</span>
 <span class="w">  </span><span class="c1"># ========================================================================</span>
 
-<span class="w">  </span><span class="nt">AgentImageBuildProject</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">MCPServerImageBuildProject</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::CodeBuild::Project</span>
 <span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-strands-agent-build&quot;</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">Strands</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">Docker</span><span class="nv"> </span><span class="s">image</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-mcp-server-build&quot;</span>
+<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Build</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">Docker</span><span class="nv"> </span><span class="s">image</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}&quot;</span>
 <span class="w">      </span><span class="nt">ServiceRole</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeBuildRole.Arn</span>
 <span class="w">      </span><span class="nt">Artifacts</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_ARTIFACTS</span>
@@ -2232,344 +2209,44 @@
 <span class="w">            </span><span class="no">build:</span>
 <span class="w">              </span><span class="no">commands:</span>
 <span class="w">                </span><span class="no">- echo Build started on `date`</span>
-<span class="w">                </span><span class="no">- echo Building the Docker image for default agent ARM64...</span>
+<span class="w">                </span><span class="no">- echo Building the Docker image for MCP server ARM64...</span>
 
-<span class="w">                </span><span class="no"># Step 1.1: Create requirements.txt</span>
+<span class="w">                </span><span class="no"># Create requirements.txt</span>
 <span class="w">                </span><span class="no">- |</span>
 <span class="w">                  </span><span class="no">cat &gt; requirements.txt &lt;&lt; &#39;EOF&#39;</span>
-<span class="w">                  </span><span class="no">strands-agents</span>
-<span class="w">                  </span><span class="no">strands-agents-tools</span>
-<span class="w">                  </span><span class="no">uv</span>
+<span class="w">                  </span><span class="no">mcp&gt;=1.10.0</span>
 <span class="w">                  </span><span class="no">boto3</span>
 <span class="w">                  </span><span class="no">bedrock-agentcore</span>
-<span class="w">                  </span><span class="no">bedrock-agentcore-starter-toolkit</span>
-<span class="w">                  </span><span class="no">browser-use==0.3.2</span>
-<span class="w">                  </span><span class="no">langchain-aws&gt;=0.1.0</span>
-<span class="w">                  </span><span class="no">rich</span>
 <span class="w">                  </span><span class="no">EOF</span>
 
-<span class="w">                </span><span class="no"># Step 1.2: Create my_agent.py</span>
+<span class="w">                </span><span class="no"># Create mcp_server.py</span>
 <span class="w">                </span><span class="no">- |</span>
-<span class="w">                  </span><span class="no">cat &gt; my_agent.py &lt;&lt; &#39;EOF&#39;</span>
-<span class="w">                  </span><span class="no">from strands import Agent, tool</span>
-<span class="w">                  </span><span class="no">from strands_tools import use_aws</span>
-<span class="w">                  </span><span class="no">from typing import Dict, Any</span>
-<span class="w">                  </span><span class="no">import json</span>
-<span class="w">                  </span><span class="no">import os</span>
-<span class="w">                  </span><span class="no">import asyncio</span>
-<span class="w">                  </span><span class="no">from contextlib import suppress</span>
+<span class="w">                  </span><span class="no">cat &gt; mcp_server.py &lt;&lt; &#39;EOF&#39;</span>
+<span class="w">                  </span><span class="no">from mcp.server.fastmcp import FastMCP</span>
+<span class="w">                  </span><span class="no">from starlette.responses import JSONResponse</span>
 
-<span class="w">                  </span><span class="no">from bedrock_agentcore.tools.browser_client import BrowserClient</span>
-<span class="w">                  </span><span class="no">from browser_use import Agent as BrowserAgent</span>
-<span class="w">                  </span><span class="no">from browser_use.browser.session import BrowserSession</span>
-<span class="w">                  </span><span class="no">from browser_use.browser import BrowserProfile</span>
-<span class="w">                  </span><span class="no">from langchain_aws import ChatBedrockConverse</span>
-<span class="w">                  </span><span class="no">from bedrock_agentcore.tools.code_interpreter_client import CodeInterpreter</span>
-<span class="w">                  </span><span class="no">from bedrock_agentcore.memory import MemoryClient</span>
-<span class="w">                  </span><span class="no">from rich.console import Console</span>
-<span class="w">                  </span><span class="no">import re</span>
+<span class="w">                  </span><span class="no">mcp = FastMCP(host=&quot;0.0.0.0&quot;, stateless_http=True)</span>
 
-<span class="w">                  </span><span class="no">from bedrock_agentcore.runtime import BedrockAgentCoreApp</span>
-<span class="w">                  </span><span class="no">app = BedrockAgentCoreApp()</span>
+<span class="w">                  </span><span class="no">@mcp.tool()</span>
+<span class="w">                  </span><span class="no">def add_numbers(a: int, b: int) -&gt; int:</span>
+<span class="w">                      </span><span class="no">&quot;&quot;&quot;Add two numbers together&quot;&quot;&quot;</span>
+<span class="w">                      </span><span class="no">return a + b</span>
 
-<span class="w">                  </span><span class="no">console = Console()</span>
+<span class="w">                  </span><span class="no">@mcp.tool()</span>
+<span class="w">                  </span><span class="no">def multiply_numbers(a: int, b: int) -&gt; int:</span>
+<span class="w">                      </span><span class="no">&quot;&quot;&quot;Multiply two numbers together&quot;&quot;&quot;</span>
+<span class="w">                      </span><span class="no">return a * b</span>
 
-<span class="w">                  </span><span class="no"># Configuration</span>
-<span class="w">                  </span><span class="no">BROWSER_ID = os.getenv(&#39;BROWSER_ID&#39;, &quot;agentcore_dev_browser-Df3lyxkbjo&quot;)</span>
-<span class="w">                  </span><span class="no">CODE_INTERPRETER_ID = os.getenv(&#39;CODE_INTERPRETER_ID&#39;, &quot;agentcore_dev_code_interpreter-IqIg8bqnKn&quot;)</span>
-<span class="w">                  </span><span class="no">MEMORY_ID = os.getenv(&#39;MEMORY_ID&#39;, &quot;agentcore_dev_TestAgentCoreMemory-N7LCAH8ZCK&quot;)</span>
-<span class="w">                  </span><span class="no">RESULTS_BUCKET = os.getenv(&#39;RESULTS_BUCKET&#39;, &quot;default-results-bucket&quot;)</span>
-<span class="w">                  </span><span class="no">region = &#39;us-west-2&#39;</span>
-
-<span class="w">                  </span><span class="no"># Async helper functions</span>
-<span class="w">                  </span><span class="no">async def run_browser_task(browser_session, bedrock_chat, task: str) -&gt; str:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Run a browser automation task using browser_use&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[blue]🤖 Executing browser task:[/blue] {task[:100]}...&quot;)</span>
-
-<span class="w">                          </span><span class="no">agent = BrowserAgent(</span>
-<span class="w">                              </span><span class="no">task=task,</span>
-<span class="w">                              </span><span class="no">llm=bedrock_chat,</span>
-<span class="w">                              </span><span class="no">browser=browser_session</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">result = await agent.run()</span>
-<span class="w">                          </span><span class="no">console.print(&quot;[green]✅ Browser task completed successfully![/green]&quot;)</span>
-
-<span class="w">                          </span><span class="no">if &#39;done&#39; in result.last_action() and &#39;text&#39; in result.last_action()[&#39;done&#39;]:</span>
-<span class="w">                              </span><span class="no">return result.last_action()[&#39;done&#39;][&#39;text&#39;] </span>
-<span class="w">                          </span><span class="no">else:</span>
-<span class="w">                              </span><span class="no">raise ValueError(&quot;NO Data&quot;)</span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[red]❌ Browser task error: {e}[/red]&quot;)</span>
-<span class="w">                          </span><span class="no">raise</span>
-
-<span class="w">                  </span><span class="no">async def initialize_browser_session():</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Initialize Browser-use session with AgentCore WebSocket connection&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">client = BrowserClient(region)</span>
-<span class="w">                          </span><span class="no">client.start(identifier=BROWSER_ID)</span>
-
-<span class="w">                          </span><span class="no">ws_url, headers = client.generate_ws_headers()</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[cyan]🔗 Browser WebSocket URL: {ws_url[:50]}...[/cyan]&quot;)</span>
-
-<span class="w">                          </span><span class="no">browser_profile = BrowserProfile(</span>
-<span class="w">                              </span><span class="no">headers=headers,</span>
-<span class="w">                              </span><span class="no">timeout=150000,</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">browser_session = BrowserSession(</span>
-<span class="w">                              </span><span class="no">cdp_url=ws_url,</span>
-<span class="w">                              </span><span class="no">browser_profile=browser_profile,</span>
-<span class="w">                              </span><span class="no">keep_alive=True</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">console.print(&quot;[cyan]🔄 Initializing browser session...[/cyan]&quot;)</span>
-<span class="w">                          </span><span class="no">await browser_session.start()</span>
-
-<span class="w">                          </span><span class="no">bedrock_chat = ChatBedrockConverse(</span>
-<span class="w">                              </span><span class="no">model_id=&quot;us.anthropic.claude-3-7-sonnet-20250219-v1:0&quot;,</span>
-<span class="w">                              </span><span class="no">region_name=&quot;us-west-2&quot;</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">console.print(&quot;[green]✅ Browser session initialized and ready[/green]&quot;)</span>
-<span class="w">                          </span><span class="no">return browser_session, bedrock_chat, client </span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[red]❌ Failed to initialize browser session: {e}[/red]&quot;)</span>
-<span class="w">                          </span><span class="no">raise</span>
-
-<span class="w">                  </span><span class="no"># Tools for Strands Agent</span>
-<span class="w">                  </span><span class="no">@tool</span>
-<span class="w">                  </span><span class="no">async def get_weather_data(city: str) -&gt; Dict[str, Any]:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Get weather data for a city using browser automation&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">browser_session = None</span>
-
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[cyan]🌐 Getting weather data for {city}[/cyan]&quot;)</span>
-
-<span class="w">                          </span><span class="no">browser_session, bedrock_chat, browser_client = await initialize_browser_session()</span>
-
-<span class="w">                          </span><span class="no">task = f&quot;&quot;&quot;Instruction: Extract 8-Day Weather Forecast for {city} from weather.gov</span>
-<span class="w">                              </span><span class="no">Steps:</span>
-<span class="w">                                  </span><span class="no">- Go to https://weather.gov.</span>
-<span class="w">                                  </span><span class="no">- Enter “{city}” into the search box and Click on `GO` to execute the search.</span>
-<span class="w">                                  </span><span class="no">- On the local forecast page, click the &quot;Printable Forecast&quot; link.</span>
-<span class="w">                                  </span><span class="no">- Wait for the printable forecast page to load completely.</span>
-<span class="w">                                  </span><span class="no">- For each day in the forecast, extract these fields:</span>
-<span class="w">                                      </span><span class="no">- date (format YYYY-MM-DD) </span>
-<span class="w">                                      </span><span class="no">- high (highest temperature)</span>
-<span class="w">                                      </span><span class="no">- low (lowest temperature)</span>
-<span class="w">                                      </span><span class="no">- conditions (short weather summary, e.g., &quot;Clear&quot;)</span>
-<span class="w">                                      </span><span class="no">- wind (wind speed as an integer; use mph or km/h as consistent)</span>
-<span class="w">                                      </span><span class="no">- precip (precipitation chance or amount, zero if none)</span>
-<span class="w">                                  </span><span class="no">- Format the extracted data as a JSON array of daily forecast objects, e.g.:</span>
-<span class="w">                                      </span><span class="no">```json</span>
-<span class="w">                                      </span><span class="no">[</span>
-<span class="w">                                      </span><span class="no">{{</span>
-<span class="w">                                          </span><span class="no">&quot;date&quot;: &quot;2025-09-17&quot;,</span>
-<span class="w">                                          </span><span class="no">&quot;high&quot;: 78,</span>
-<span class="w">                                          </span><span class="no">&quot;low&quot;: 62,</span>
-<span class="w">                                          </span><span class="no">&quot;conditions&quot;: &quot;Clear&quot;,</span>
-<span class="w">                                          </span><span class="no">&quot;wind&quot;: 10,</span>
-<span class="w">                                          </span><span class="no">&quot;precip&quot;: 80</span>
-<span class="w">                                      </span><span class="no">}},</span>
-<span class="w">                                      </span><span class="no">{{</span>
-<span class="w">                                          </span><span class="no">&quot;date&quot;: &quot;2025-09-18&quot;,</span>
-<span class="w">                                          </span><span class="no">&quot;high&quot;: 82,</span>
-<span class="w">                                          </span><span class="no">&quot;low&quot;: 65,</span>
-<span class="w">                                          </span><span class="no">&quot;conditions&quot;: &quot;Partly Cloudy&quot;,</span>
-<span class="w">                                          </span><span class="no">&quot;wind&quot;: 10,</span>
-<span class="w">                                          </span><span class="no">&quot;precip&quot;: 80</span>
-
-<span class="w">                                      </span><span class="no">}}</span>
-<span class="w">                                      </span><span class="no">// ... Repeat for each day ...</span>
-<span class="w">                                      </span><span class="no">]```</span>
-
-<span class="w">                                  </span><span class="no">- Return only this JSON array as the final output.</span>
-
-<span class="w">                              </span><span class="no">Additional Notes:</span>
-<span class="w">                                  </span><span class="no">Use null or 0 if any numeric value is missing.</span>
-<span class="w">                                  </span><span class="no">Avoid scraping ads, navigation, or unrelated page elements.</span>
-<span class="w">                                  </span><span class="no">If &quot;Printable Forecast&quot; is missing, fallback to the main forecast page.</span>
-<span class="w">                                  </span><span class="no">Include error handling (e.g., return an empty array if forecast data isn&#39;t found).</span>
-<span class="w">                                  </span><span class="no">Confirm the city name matches the requested location before returning results. </span>
-<span class="w">                          </span><span class="no">&quot;&quot;&quot;</span>
-
-<span class="w">                          </span><span class="no">result = await run_browser_task(browser_session, bedrock_chat, task)</span>
-
-<span class="w">                          </span><span class="no">if browser_client :</span>
-<span class="w">                              </span><span class="no">browser_client.stop()</span>
-
-<span class="w">                          </span><span class="no">return {</span>
-<span class="w">                              </span><span class="no">&quot;status&quot;: &quot;success&quot;,</span>
-<span class="w">                              </span><span class="no">&quot;content&quot;: [{&quot;text&quot;: result}]</span>
-<span class="w">                          </span><span class="no">}</span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[red]❌ Error getting weather data: {e}[/red]&quot;)</span>
-<span class="w">                          </span><span class="no">return {</span>
-<span class="w">                              </span><span class="no">&quot;status&quot;: &quot;error&quot;,</span>
-<span class="w">                              </span><span class="no">&quot;content&quot;: [{&quot;text&quot;: f&quot;Error getting weather data: {str(e)}&quot;}]</span>
-<span class="w">                          </span><span class="no">}</span>
-
-<span class="w">                      </span><span class="no">finally:</span>
-<span class="w">                          </span><span class="no">if browser_session:</span>
-<span class="w">                              </span><span class="no">console.print(&quot;[yellow]🔌 Closing browser session...[/yellow]&quot;)</span>
-<span class="w">                              </span><span class="no">with suppress(Exception):</span>
-<span class="w">                                  </span><span class="no">await browser_session.close()</span>
-<span class="w">                              </span><span class="no">console.print(&quot;[green]✅ Browser session closed[/green]&quot;)</span>
-
-<span class="w">                  </span><span class="no">@tool</span>
-<span class="w">                  </span><span class="no">def generate_analysis_code(weather_data: str) -&gt; Dict[str, Any]:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Generate Python code for weather classification&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">query = f&quot;&quot;&quot;Create Python code to classify weather days as GOOD/OK/POOR:</span>
-
-<span class="w">                          </span><span class="no">Rules: </span>
-<span class="w">                          </span><span class="no">- GOOD: 65-80°F, clear conditions, no rain</span>
-<span class="w">                          </span><span class="no">- OK: 55-85°F, partly cloudy, slight rain chance  </span>
-<span class="w">                          </span><span class="no">- POOR: &lt;55°F or &gt;85°F, cloudy/rainy</span>
-
-<span class="w">                          </span><span class="no">Weather data: </span>
-<span class="w">                          </span><span class="no">{weather_data} </span>
-
-<span class="w">                          </span><span class="no">Store weather data stored in python variable for using it in python code </span>
-
-<span class="w">                          </span><span class="no">Return code that outputs list of tuples: [(&#39;2025-09-16&#39;, &#39;GOOD&#39;), (&#39;2025-09-17&#39;, &#39;OK&#39;), ...]&quot;&quot;&quot;</span>
-
-<span class="w">                          </span><span class="no">agent = Agent()</span>
-<span class="w">                          </span><span class="no">result = agent(query)</span>
-
-<span class="w">                          </span><span class="no">pattern = r&#39;```(?:json|python)\n(.*?)\n```&#39;</span>
-<span class="w">                          </span><span class="no">match = re.search(pattern, result.message[&#39;content&#39;][0][&#39;text&#39;], re.DOTALL)</span>
-<span class="w">                          </span><span class="no">python_code = match.group(1).strip() if match else result.message[&#39;content&#39;][0][&#39;text&#39;]</span>
-
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;success&quot;, &quot;content&quot;: [{&quot;text&quot;: python_code}]}</span>
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;error&quot;, &quot;content&quot;: [{&quot;text&quot;: f&quot;Error: {str(e)}&quot;}]}</span>
-
-<span class="w">                  </span><span class="no">@tool </span>
-<span class="w">                  </span><span class="no">def execute_code(python_code: str) -&gt; Dict[str, Any]:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Execute Python code using AgentCore Code Interpreter&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">code_client = CodeInterpreter(&#39;us-west-2&#39;)</span>
-<span class="w">                          </span><span class="no">code_client.start(identifier=CODE_INTERPRETER_ID)</span>
-
-<span class="w">                          </span><span class="no">response = code_client.invoke(&quot;executeCode&quot;, {</span>
-<span class="w">                              </span><span class="no">&quot;code&quot;: python_code,</span>
-<span class="w">                              </span><span class="no">&quot;language&quot;: &quot;python&quot;,</span>
-<span class="w">                              </span><span class="no">&quot;clearContext&quot;: True</span>
-<span class="w">                          </span><span class="no">})</span>
-
-<span class="w">                          </span><span class="no">for event in response[&quot;stream&quot;]:</span>
-<span class="w">                              </span><span class="no">code_execute_result = json.dumps(event[&quot;result&quot;])</span>
-
-<span class="w">                          </span><span class="no">analysis_results = json.loads(code_execute_result)</span>
-<span class="w">                          </span><span class="no">console.print(&quot;Analysis results:&quot;, analysis_results)</span>
-
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;success&quot;, &quot;content&quot;: [{&quot;text&quot;: str(analysis_results)}]}</span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;error&quot;, &quot;content&quot;: [{&quot;text&quot;: f&quot;Error: {str(e)}&quot;}]}</span>
-
-<span class="w">                  </span><span class="no">@tool</span>
-<span class="w">                  </span><span class="no">def get_activity_preferences() -&gt; Dict[str, Any]:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Get activity preferences from memory&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">client = MemoryClient(region_name=&#39;us-west-2&#39;)</span>
-<span class="w">                          </span><span class="no">response = client.list_events(</span>
-<span class="w">                              </span><span class="no">memory_id=MEMORY_ID,</span>
-<span class="w">                              </span><span class="no">actor_id=&quot;user123&quot;,</span>
-<span class="w">                              </span><span class="no">session_id=&quot;session456&quot;,</span>
-<span class="w">                              </span><span class="no">max_results=50,</span>
-<span class="w">                              </span><span class="no">include_payload=True</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">preferences = response[0][&quot;payload&quot;][0][&#39;blob&#39;] if response else &quot;No preferences found&quot;</span>
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;success&quot;, &quot;content&quot;: [{&quot;text&quot;: preferences}]}</span>
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">return {&quot;status&quot;: &quot;error&quot;, &quot;content&quot;: [{&quot;text&quot;: f&quot;Error: {str(e)}&quot;}]}</span>
-
-<span class="w">                  </span><span class="no">def create_weather_agent() -&gt; Agent:</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Create the weather agent with all tools&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">system_prompt = f&quot;&quot;&quot;You are a Weather-Based Activity Planning Assistant.</span>
-
-<span class="w">                      </span><span class="no">When a user asks about activities for a location, follow below stepes Sequentially:</span>
-<span class="w">                      </span><span class="no">1. Extract city from user query</span>
-<span class="w">                      </span><span class="no">2. Call get_weather_data(city) to get weather information</span>
-<span class="w">                      </span><span class="no">3. Call generate_analysis_code(weather_data) to create classification code</span>
-<span class="w">                      </span><span class="no">4. Call execute_code(python_code) to get Day Type ( GOOD, OK , POOR ) for forecasting dates. </span>
-<span class="w">                      </span><span class="no">5. Call get_activity_preferences() to get user preferences</span>
-<span class="w">                      </span><span class="no">6. Generate Activity Recommendations based on weather and preferences that you have recieved from previous steps</span>
-<span class="w">                      </span><span class="no">7. Generate the comprehensive Markdown file (results.md) and store it in S3 Bucket :  {RESULTS_BUCKET} through use_aws tool. </span>
-
-<span class="w">                      </span><span class="no">IMPORTANT: Provide complete recommendations and end your response. Do NOT ask follow-up questions or wait for additional input.&quot;&quot;&quot;</span>
-
-<span class="w">                      </span><span class="no">return Agent(</span>
-<span class="w">                          </span><span class="no">tools=[get_weather_data, generate_analysis_code, execute_code, get_activity_preferences, use_aws],</span>
-<span class="w">                          </span><span class="no">system_prompt=system_prompt,</span>
-<span class="w">                          </span><span class="no">name=&quot;WeatherActivityPlanner&quot;</span>
-<span class="w">                      </span><span class="no">)</span>
-
-<span class="w">                  </span><span class="no">@app.async_task</span>
-<span class="w">                  </span><span class="no">async def async_main(query=None):</span>
-<span class="w">                      </span><span class="no">&quot;&quot;&quot;Async main function&quot;&quot;&quot;</span>
-<span class="w">                      </span><span class="no">console.print(&quot;🌤️ Weather-Based Activity Planner - Async Version&quot;)</span>
-<span class="w">                      </span><span class="no">console.print(&quot;=&quot; * 30)</span>
-
-<span class="w">                      </span><span class="no">agent = create_weather_agent()</span>
-
-<span class="w">                      </span><span class="no">query = query or &quot;What should I do this weekend in Richmond VA?&quot;</span>
-<span class="w">                      </span><span class="no">console.print(f&quot;\n[bold blue]🔍 Query:[/bold blue] {query}&quot;)</span>
-<span class="w">                      </span><span class="no">console.print(&quot;-&quot; * 50)</span>
-
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no">os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = &quot;True&quot;</span>
-<span class="w">                          </span><span class="no">result = agent(query)</span>
-
-<span class="w">                          </span><span class="no">return {</span>
-<span class="w">                            </span><span class="no">&quot;status&quot;: &quot;completed&quot;,</span>
-<span class="w">                            </span><span class="no">&quot;result&quot;: result.message[&#39;content&#39;][0][&#39;text&#39;]</span>
-<span class="w">                          </span><span class="no">}</span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">console.print(f&quot;[red]❌ Error: {e}[/red]&quot;)</span>
-<span class="w">                          </span><span class="no">import traceback</span>
-<span class="w">                          </span><span class="no">traceback.print_exc()</span>
-<span class="w">                          </span><span class="no">return {</span>
-<span class="w">                            </span><span class="no">&quot;status&quot;: &quot;error&quot;,</span>
-<span class="w">                            </span><span class="no">&quot;error&quot;: str(e)</span>
-<span class="w">                          </span><span class="no">}</span>
-
-<span class="w">                  </span><span class="no">@app.entrypoint</span>
-<span class="w">                  </span><span class="no">async def invoke(payload=None):</span>
-<span class="w">                      </span><span class="no">try:</span>
-<span class="w">                          </span><span class="no"># change</span>
-<span class="w">                          </span><span class="no">query = payload.get(&quot;prompt&quot;)</span>
-
-<span class="w">                          </span><span class="no">asyncio.create_task(async_main(query))</span>
-
-<span class="w">                          </span><span class="no">msg = (</span>
-<span class="w">                               </span><span class="no">&quot;Processing started ... &quot;</span>
-<span class="w">                              </span><span class="no">f&quot;You can monitor status in CloudWatch logs at /aws/bedrock-agentcore/runtimes/&lt;agent-runtime-id&gt; .....&quot;</span>
-<span class="w">                              </span><span class="no">f&quot;You can see the result at {RESULTS_BUCKET} ....&quot;</span>
-<span class="w">                          </span><span class="no">)</span>
-
-<span class="w">                          </span><span class="no">return {</span>
-<span class="w">                              </span><span class="no">&quot;status&quot;: &quot;Started&quot;,</span>
-<span class="w">                              </span><span class="no">&quot;message&quot;: msg</span>
-<span class="w">                          </span><span class="no">}</span>
-
-<span class="w">                      </span><span class="no">except Exception as e:</span>
-<span class="w">                          </span><span class="no">return {&quot;error&quot;: str(e)}</span>
+<span class="w">                  </span><span class="no">@mcp.tool()</span>
+<span class="w">                  </span><span class="no">def greet_user(name: str) -&gt; str:</span>
+<span class="w">                      </span><span class="no">&quot;&quot;&quot;Greet a user by name&quot;&quot;&quot;</span>
+<span class="w">                      </span><span class="no">return f&quot;Hello, {name}! Nice to meet you.&quot;</span>
 
 <span class="w">                  </span><span class="no">if __name__ == &quot;__main__&quot;:</span>
-<span class="w">                      </span><span class="no">app.run()</span>
+<span class="w">                      </span><span class="no">mcp.run(transport=&quot;streamable-http&quot;)</span>
 <span class="w">                  </span><span class="no">EOF</span>
 
-<span class="w">                </span><span class="no"># Step 1.3: Create Dockerfile</span>
+<span class="w">                </span><span class="no"># Create Dockerfile</span>
 <span class="w">                </span><span class="no">- |</span>
 <span class="w">                  </span><span class="no">cat &gt; Dockerfile &lt;&lt; &#39;EOF&#39;</span>
 <span class="w">                  </span><span class="no">FROM public.ecr.aws/docker/library/python:3.11-slim</span>
@@ -2577,7 +2254,6 @@
 
 <span class="w">                  </span><span class="no">COPY requirements.txt requirements.txt</span>
 <span class="w">                  </span><span class="no">RUN pip install -r requirements.txt</span>
-<span class="w">                  </span><span class="no">RUN pip install aws-opentelemetry-distro&gt;=0.10.1</span>
 
 <span class="w">                  </span><span class="no">ENV AWS_REGION=us-west-2</span>
 <span class="w">                  </span><span class="no">ENV AWS_DEFAULT_REGION=us-west-2</span>
@@ -2586,16 +2262,14 @@
 <span class="w">                  </span><span class="no">RUN useradd -m -u 1000 bedrock_agentcore</span>
 <span class="w">                  </span><span class="no">USER bedrock_agentcore</span>
 
-<span class="w">                  </span><span class="no">EXPOSE 8080</span>
 <span class="w">                  </span><span class="no">EXPOSE 8000</span>
 
-<span class="w">                  </span><span class="no">COPY . . </span>
+<span class="w">                  </span><span class="no">COPY . .</span>
 
-<span class="w">                  </span><span class="no">CMD [&quot;opentelemetry-instrument&quot;, &quot;python&quot;, &quot;-m&quot;, &quot;my_agent&quot;]</span>
-
+<span class="w">                  </span><span class="no">CMD [&quot;python&quot;, &quot;-m&quot;, &quot;mcp_server&quot;]</span>
 <span class="w">                  </span><span class="no">EOF</span>
 
-<span class="w">                </span><span class="no"># Step 1.5: Build the image</span>
+<span class="w">                </span><span class="no"># Build the image</span>
 <span class="w">                </span><span class="no">- echo Building ARM64 image...</span>
 <span class="w">                </span><span class="no">- docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .</span>
 <span class="w">                </span><span class="no">- docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG</span>
@@ -2609,7 +2283,7 @@
 
 <span class="w">      </span><span class="nt">Tags</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
-<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-strands-build&quot;</span>
+<span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-mcp-server-build&quot;</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StackName</span>
 <span class="w">          </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::StackName</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Module</span>
@@ -2620,27 +2294,23 @@
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Custom::CodeBuildTrigger</span>
 <span class="w">    </span><span class="nt">DependsOn</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECRRepository</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentImageBuildProject</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCPServerImageBuildProject</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeBuildTriggerFunction</span>
 <span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">ServiceToken</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeBuildTriggerFunction.Arn</span>
-<span class="w">      </span><span class="nt">ProjectName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentImageBuildProject</span>
+<span class="w">      </span><span class="nt">ProjectName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCPServerImageBuildProject</span>
 <span class="w">      </span><span class="nt">WaitForCompletion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
 
 <span class="w">  </span><span class="c1"># ========================================================================</span>
-<span class="w">  </span><span class="c1"># AGENTCORE MODULE - Runtime and Tools</span>
+<span class="w">  </span><span class="c1"># AGENTCORE MODULE - MCP Server Runtime</span>
 <span class="w">  </span><span class="c1"># ========================================================================</span>
 
-<span class="w">  </span><span class="c1"># AgentCore Runtime</span>
-<span class="w">  </span><span class="nt">AgentRuntime</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">MCPServerRuntime</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::BedrockAgentCore::Runtime</span>
-<span class="w">    </span><span class="nt">DependsOn</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">DependsOn</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TriggerImageBuild</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BrowserTool</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeInterpreterTool</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BasicMemory</span>
 <span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">AgentRuntimeName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span>
+<span class="w">      </span><span class="nt">AgentRuntimeName</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;${StackNameUnderscore}_${AgentName}&quot;</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">StackNameUnderscore</span><span class="p">:</span><span class="w"> </span><span class="kt">!Join</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;_&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;-&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="s">&quot;AWS::StackName&quot;</span><span class="p p-Indicator">]]</span>
 <span class="w">      </span><span class="nt">AgentRuntimeArtifact</span><span class="p">:</span>
@@ -2649,96 +2319,174 @@
 <span class="w">      </span><span class="nt">RoleArn</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentExecutionRole.Arn</span>
 <span class="w">      </span><span class="nt">NetworkConfiguration</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">NetworkMode</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkMode</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Strands</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">runtime</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}&quot;</span>
-<span class="w">      </span><span class="nt">EnvironmentVariables</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">BROWSER_ID</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BrowserTool.BrowserId</span>
-<span class="w">        </span><span class="nt">CODE_INTERPRETER_ID</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeInterpreterTool.CodeInterpreterId</span>
-<span class="w">        </span><span class="nt">MEMORY_ID</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BasicMemory.MemoryId</span>
-<span class="w">        </span><span class="nt">RESULTS_BUCKET</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResultsBucket</span>
-
-
-<span class="w">  </span><span class="c1"># Browser Tool</span>
-<span class="w">  </span><span class="nt">BrowserTool</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::BedrockAgentCore::BrowserCustom</span>
-<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;${StackNameUnderscore}_browser&quot;</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">StackNameUnderscore</span><span class="p">:</span><span class="w"> </span><span class="kt">!Join</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;_&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;-&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="s">&quot;AWS::StackName&quot;</span><span class="p p-Indicator">]]</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Browser</span><span class="nv"> </span><span class="s">tool</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}</span><span class="nv"> </span><span class="s">web</span><span class="nv"> </span><span class="s">automation&quot;</span>
-<span class="w">      </span><span class="nt">NetworkConfiguration</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">NetworkMode</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkMode</span>
-<span class="w">      </span><span class="nt">RecordingConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">Enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-
-<span class="w">  </span><span class="c1"># Code Interpreter Tool</span>
-<span class="w">  </span><span class="nt">CodeInterpreterTool</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::BedrockAgentCore::CodeInterpreterCustom</span>
-<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;${StackNameUnderscore}_code_interpreter&quot;</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">StackNameUnderscore</span><span class="p">:</span><span class="w"> </span><span class="kt">!Join</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;_&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;-&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="s">&quot;AWS::StackName&quot;</span><span class="p p-Indicator">]]</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Code</span><span class="nv"> </span><span class="s">interpreter</span><span class="nv"> </span><span class="s">tool</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}</span><span class="nv"> </span><span class="s">code</span><span class="nv"> </span><span class="s">execution&quot;</span>
-<span class="w">      </span><span class="nt">NetworkConfiguration</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">NetworkMode</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NetworkMode</span>
-
-<span class="w">  </span><span class="c1"># Basic Memory</span>
-<span class="w">  </span><span class="nt">BasicMemory</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::BedrockAgentCore::Memory</span>
-<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;${StackNameUnderscore}_${MemoryName}&quot;</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">StackNameUnderscore</span><span class="p">:</span><span class="w"> </span><span class="kt">!Join</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;_&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;-&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="s">&quot;AWS::StackName&quot;</span><span class="p p-Indicator">]]</span>
-<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;Memory</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}</span><span class="nv"> </span><span class="s">integration</span><span class="nv"> </span><span class="s">testing&quot;</span>
-<span class="w">      </span><span class="nt">EventExpiryDuration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
-
-<span class="w">  </span><span class="c1"># ========================================================================</span>
-<span class="w">  </span><span class="c1"># CUSTOM RESOURCE - Initialize Memory with Default Entries</span>
-<span class="w">  </span><span class="c1"># ========================================================================</span>
-
-<span class="w">  </span><span class="nt">InitializeMemoryEntries</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Custom::MemoryInitializer</span>
-<span class="w">    </span><span class="nt">DependsOn</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BasicMemory</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MemoryInitializerFunction</span>
-<span class="w">    </span><span class="nt">Properties</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">ServiceToken</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MemoryInitializerFunction.Arn</span>
-<span class="w">      </span><span class="nt">MemoryId</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BasicMemory.MemoryId</span>
-<span class="w">      </span><span class="nt">Region</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AWS::Region</span>
+<span class="w">      </span><span class="nt">ProtocolConfiguration</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCP</span>
+<span class="w">      </span><span class="nt">AuthorizerConfiguration</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">CustomJWTAuthorizer</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">AllowedClients</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPoolClient</span>
+<span class="w">          </span><span class="nt">DiscoveryUrl</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}/.well-known/openid-configuration&quot;</span>
+<span class="w">      </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">runtime</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">${AWS::StackName}&quot;</span>
 
 <span class="c1"># ============================================================================</span>
-<span class="c1"># OUTPUTS SECTION - ORGANIZED BY MODULE</span>
+<span class="c1"># OUTPUTS SECTION</span>
 <span class="c1"># ============================================================================</span>
 <span class="nt">Outputs</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># AGENTCORE MODULE OUTPUTS</span>
-<span class="w">  </span><span class="nt">AgentRuntimeId</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">runtime&quot;</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentRuntime.AgentRuntimeId</span>
+<span class="w">  </span><span class="nt">MCPServerRuntimeId</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">runtime&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCPServerRuntime.AgentRuntimeId</span>
 <span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-AgentRuntimeId&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-MCPServerRuntimeId&quot;</span>
 
-<span class="w">  </span><span class="nt">BrowserId</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ID of the created browser</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BrowserTool.BrowserId</span>
+<span class="w">  </span><span class="nt">MCPServerRuntimeArn</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ARN</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server</span><span class="nv"> </span><span class="s">runtime&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCPServerRuntime.AgentRuntimeArn</span>
 <span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-BrowserId&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-MCPServerRuntimeArn&quot;</span>
 
-<span class="w">  </span><span class="nt">CodeInterpreterId</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ID of the created code interpreter</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CodeInterpreterTool.CodeInterpreterId</span>
+<span class="w">  </span><span class="nt">MCPServerInvocationURL</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;URL</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">invoke</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">MCP</span><span class="nv"> </span><span class="s">server&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;https://bedrock-agentcore.${AWS::Region}.amazonaws.com/runtimes/${EncodedArn}/invocations?qualifier=DEFAULT&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">EncodedArn</span><span class="p">:</span><span class="w"> </span><span class="kt">!Join</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%3A&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%3A&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%3A&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%3A&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%3A&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;:&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;%2F&quot;</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="kt">!Select</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!Split</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;/&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="nv">MCPServerRuntime.AgentRuntimeArn</span><span class="p p-Indicator">]]</span>
 <span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-CodeInterpreterId&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-MCPServerInvocationURL&quot;</span>
 
-<span class="w">  </span><span class="nt">MemoryId</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">created</span><span class="nv"> </span><span class="s">memory&quot;</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BasicMemory.MemoryId</span>
+<span class="w">  </span><span class="c1"># ECR OUTPUTS</span>
+<span class="w">  </span><span class="nt">ECRRepositoryUri</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;URI</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">ECR</span><span class="nv"> </span><span class="s">repository&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ECRRepository.RepositoryUri</span>
 <span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-MemoryId&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-ECRRepositoryUri&quot;</span>
 
-<span class="w">  </span><span class="nt">ResultsBucket</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;S3</span><span class="nv"> </span><span class="s">bucket</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">storing</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">results&quot;</span>
-<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResultsBucket</span>
+<span class="w">  </span><span class="c1"># IAM OUTPUTS</span>
+<span class="w">  </span><span class="nt">AgentExecutionRoleArn</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ARN</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">agent</span><span class="nv"> </span><span class="s">execution</span><span class="nv"> </span><span class="s">role&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!GetAtt</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AgentExecutionRole.Arn</span>
 <span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-ResultsBucket&quot;</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-AgentExecutionRoleArn&quot;</span>
+
+<span class="w">  </span><span class="c1"># COGNITO OUTPUTS</span>
+<span class="w">  </span><span class="nt">CognitoUserPoolId</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Cognito</span><span class="nv"> </span><span class="s">User</span><span class="nv"> </span><span class="s">Pool&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPool</span>
+<span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-CognitoUserPoolId&quot;</span>
+
+<span class="w">  </span><span class="nt">CognitoUserPoolClientId</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Cognito</span><span class="nv"> </span><span class="s">User</span><span class="nv"> </span><span class="s">Pool</span><span class="nv"> </span><span class="s">Client&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Ref</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CognitoUserPoolClient</span>
+<span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-CognitoUserPoolClientId&quot;</span>
+
+<span class="w">  </span><span class="nt">CognitoDiscoveryUrl</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Cognito</span><span class="nv"> </span><span class="s">OIDC</span><span class="nv"> </span><span class="s">Discovery</span><span class="nv"> </span><span class="s">URL&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}/.well-known/openid-configuration&quot;</span>
+<span class="w">    </span><span class="nt">Export</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="s">&quot;${AWS::StackName}-CognitoDiscoveryUrl&quot;</span>
+
+<span class="w">  </span><span class="c1"># AUTHENTICATION INFO</span>
+<span class="w">  </span><span class="nt">TestUsername</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Test</span><span class="nv"> </span><span class="s">username</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">authentication&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;testuser&quot;</span>
+
+<span class="w">  </span><span class="nt">TestPassword</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Test</span><span class="nv"> </span><span class="s">password</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">authentication&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MyPassword123!&quot;</span>
+
+<span class="w">  </span><span class="nt">GetTokenCommand</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Command</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">get</span><span class="nv"> </span><span class="s">authentication</span><span class="nv"> </span><span class="s">token&quot;</span>
+<span class="w">    </span><span class="nt">Value</span><span class="p">:</span><span class="w"> </span><span class="kt">!Sub</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">python get_token.py ${CognitoUserPoolClient} testuser MyPassword123!</span>
+</code></pre></div>
+<h3 id="get_tokenpy">get_token.py<a class="headerlink" href="#get_tokenpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple Cognito Authentication Script</span>
+<span class="sd">Matches the approach from the original tutorial</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_token</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get authentication token from Cognito.&quot;&quot;&quot;</span>
+    <span class="c1"># Use provided region or default from environment/config</span>
+    <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
+        <span class="n">cognito_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;cognito-idp&quot;</span><span class="p">,</span> <span class="n">region_name</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cognito_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;cognito-idp&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">auth_response</span> <span class="o">=</span> <span class="n">cognito_client</span><span class="o">.</span><span class="n">initiate_auth</span><span class="p">(</span>
+            <span class="n">ClientId</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="n">AuthFlow</span><span class="o">=</span><span class="s2">&quot;USER_PASSWORD_AUTH&quot;</span><span class="p">,</span>
+            <span class="n">AuthParameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;USERNAME&quot;</span><span class="p">:</span> <span class="n">username</span><span class="p">,</span> <span class="s2">&quot;PASSWORD&quot;</span><span class="p">:</span> <span class="n">password</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">auth_response</span><span class="p">[</span><span class="s2">&quot;AuthenticationResult&quot;</span><span class="p">][</span><span class="s2">&quot;AccessToken&quot;</span><span class="p">]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Troubleshooting:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Verify the Client ID is correct&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Ensure you&#39;re using the correct region&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Check that the user exists and password is correct&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Verify USER_PASSWORD_AUTH is enabled for this client&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: python get_token.py &lt;client_id&gt; &lt;username&gt; &lt;password&gt; [region]&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Examples:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  python get_token.py abc123xyz testuser MyPassword123!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  python get_token.py abc123xyz testuser MyPassword123! us-west-2&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">client_id</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">region</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authenticating with Cognito in region </span><span class="si">{</span><span class="n">region</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Authenticating with Cognito...&quot;</span><span class="p">)</span>
+
+    <span class="n">token</span> <span class="o">=</span> <span class="n">get_token</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Authentication Successful!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Access Token:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Export Command:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">export JWT_TOKEN=&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Then use in curl:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;curl -H &quot;Authorization: Bearer $JWT_TOKEN&quot; &lt;your-api-url&gt;&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
 </code></pre></div>
 
 

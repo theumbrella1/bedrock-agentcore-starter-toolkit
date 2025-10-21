@@ -1,4 +1,4 @@
-# LlamaIndex Agent with Bedrock AgentCore Integration
+LlamaIndex Agent with Bedrock AgentCore Integration
 
 | Information        | Details                                |
 | ------------------ | -------------------------------------- |
