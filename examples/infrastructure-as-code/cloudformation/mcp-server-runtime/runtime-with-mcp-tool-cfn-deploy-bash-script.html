@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/get-cognito-authentication.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/runtime-with-mcp-tool-cfn-deploy-bash-script.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Get cognito authentication - Amazon Bedrock AgentCore</title>
+        <title>Runtime with mcp tool cfn deploy bash script - Amazon Bedrock AgentCore</title>
       
     
     
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Get cognito authentication
+              Runtime with mcp tool cfn deploy bash script
             
           </span>
         </div>
@@ -1663,81 +1663,78 @@
   
 
 
-  <h1>Get cognito authentication</h1>
+  <h1>Runtime with mcp tool cfn deploy bash script</h1>
 
-<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Simple Cognito Authentication Script</span>
-<span class="sd">Matches the approach from the original tutorial</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="c1"># Streamlined deployment script for MCP Server on AgentCore Runtime</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="nb">set</span><span class="w"> </span>-e
 
+<span class="nv">STACK_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">mcp</span><span class="p">-server-demo</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">REGION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">us</span><span class="p">-west-2</span><span class="si">}</span><span class="s2">&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_token</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get authentication token from Cognito.&quot;&quot;&quot;</span>
-    <span class="c1"># Use provided region or default from environment/config</span>
-    <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
-        <span class="n">cognito_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;cognito-idp&quot;</span><span class="p">,</span> <span class="n">region_name</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">cognito_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;cognito-idp&quot;</span><span class="p">)</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;MCP Server Deployment Script&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">auth_response</span> <span class="o">=</span> <span class="n">cognito_client</span><span class="o">.</span><span class="n">initiate_auth</span><span class="p">(</span>
-            <span class="n">ClientId</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
-            <span class="n">AuthFlow</span><span class="o">=</span><span class="s2">&quot;USER_PASSWORD_AUTH&quot;</span><span class="p">,</span>
-            <span class="n">AuthParameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;USERNAME&quot;</span><span class="p">:</span> <span class="n">username</span><span class="p">,</span> <span class="s2">&quot;PASSWORD&quot;</span><span class="p">:</span> <span class="n">password</span><span class="p">},</span>
-        <span class="p">)</span>
+<span class="c1"># Deploy CloudFormation stack</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;📦 Deploying CloudFormation stack...&quot;</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--template-body<span class="w"> </span>file://mcp-server-template.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--capabilities<span class="w"> </span>CAPABILITY_NAMED_IAM<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
 
-        <span class="k">return</span> <span class="n">auth_response</span><span class="p">[</span><span class="s2">&quot;AuthenticationResult&quot;</span><span class="p">][</span><span class="s2">&quot;AccessToken&quot;</span><span class="p">]</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack creation initiated&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Troubleshooting:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Verify the Client ID is correct&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Ensure you&#39;re using the correct region&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Check that the user exists and password is correct&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Verify USER_PASSWORD_AUTH is enabled for this client&quot;</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Wait for stack to complete</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;⏳ Waiting for stack to complete (this takes ~10-15 minutes)...&quot;</span>
+aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-create-complete<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
 
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack deployment complete!&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: python get_token.py &lt;client_id&gt; &lt;username&gt; &lt;password&gt; [region]&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Examples:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  python get_token.py abc123xyz testuser MyPassword123!&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  python get_token.py abc123xyz testuser MyPassword123! us-west-2&quot;</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Get stack outputs</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;📋 Retrieving stack outputs...&quot;</span>
+<span class="nv">CLIENT_ID</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`CognitoUserPoolClientId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span><span class="k">)</span>
 
-    <span class="n">client_id</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">username</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">password</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-    <span class="n">region</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="nv">AGENT_ARN</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`MCPServerRuntimeArn`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span><span class="k">)</span>
 
-    <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authenticating with Cognito in region </span><span class="si">{</span><span class="n">region</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Authenticating with Cognito...&quot;</span><span class="p">)</span>
-
-    <span class="n">token</span> <span class="o">=</span> <span class="n">get_token</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Authentication Successful!&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Access Token:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Export Command:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">export JWT_TOKEN=&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Then use in curl:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;curl -H &quot;Authorization: Bearer $JWT_TOKEN&quot; &lt;your-api-url&gt;&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">()</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✅ Deployment Complete!&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Client ID: </span><span class="nv">$CLIENT_ID</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Agent ARN: </span><span class="nv">$AGENT_ARN</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Test Credentials:&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  Username: testuser&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  Password: MyPassword123!&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Next Steps:&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Test your MCP server:&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  ./test.sh </span><span class="nv">$STACK_NAME</span><span class="s2"> </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
 </code></pre></div>
 
 

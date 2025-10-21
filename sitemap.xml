@@ -2,210 +2,258 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/index.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/api-reference/cli.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/api-reference/identity.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/api-reference/memory.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/api-reference/runtime.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/api-reference/tools.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/index.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/agentcore-quickstart-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/async-processing.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/gateway-integration.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/memory_gateway_agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/runtime-framework-agents.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/semantic_search.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/session-management.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cdk/basic-runtime/basic-runtime-cdk-deploy-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cdk/basic-runtime/basic-runtime-cdk-deploy-sample.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/basic-runtime/runtime-cfn-deploy-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/basic-runtime/runtime-cfn-template.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/basic-runtime/runtime-deploy-bash-script.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
-         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/weather-agent-cfn-template.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/runtime-with-tools-and-memory-cfn-deploy-bash-script.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
-         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/weather-agent-deploy-bash-script.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/runtime-with-tools-and-memory-cfn-deploy-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
-         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/get-cognito-authentication.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/end-to-end-weather-agent/runtime-with-tools-and-memory-cfn-template.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
-         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/mcp-server-deploy-bash-script.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/runtime-with-mcp-tool-cfn-deploy-bash-script.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
-         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/mcp-server-on-runtime-cfn-template.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/runtime-with-mcp-tool-cfn-deploy-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/runtime-with-mcp-tool-cfn-template.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/multi-agent-runtime/multi-agent-runtime-cfn-deploy-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/multi-agent-runtime/multi-agent-runtime-cfn-template.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/multi-agent-runtime/multi-agent-runtime-deploy-bash-script.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/adk/adk-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/adk/adk-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/autogen/autogen-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/autogen/autogen-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/claude-sdk/claude-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/claude-sdk/claude-agent.html</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/langgraph/langgraph-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/langgraph/langgraph-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/llamaindex/llama-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/llamaindex/llama-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/openai/openai-agent-basic-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/openai/openai-agent-handoff-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/openai/openai-agent-readme.html</loc>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/pydanticai/pydanticai-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/strands/strands-agent-basic-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/strands/strands-agent-openai-identity-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/strands/strands-agent-streaming-example.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/observability/dynatrace/observability-agent-and-dynatrace-init.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/observability/dynatrace/observability-basic-agent.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/observability/dynatrace/observability-dynatrace.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/mcp/agentcore_runtime_deployment.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/builtin-tools/quickstart-browser.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/builtin-tools/quickstart-code-interpreter.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/gateway/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/identity/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/import-agent/configuration.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/import-agent/design.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/import-agent/overview.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/import-agent/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/memory/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/observability/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/runtime/async.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/runtime/notebook.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/runtime/overview.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/runtime/permissions.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
     <url>
          <loc>https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/user-guide/runtime/quickstart.html</loc>
-         <lastmod>2025-10-15</lastmod>
+         <lastmod>2025-10-21</lastmod>
     </url>
 </urlset>

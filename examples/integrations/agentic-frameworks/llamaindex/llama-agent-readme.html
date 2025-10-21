@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/infrastructure-as-code/cloudformation/mcp-server-runtime/mcp-server-deploy-bash-script.html">
+      <link rel="canonical" href="https://theumbrella1.github.io/bedrock-agentcore-starter-toolkit/examples/integrations/agentic-frameworks/llamaindex/llama-agent-readme.html">
     
     
     
@@ -21,7 +21,7 @@
 
     
       
-        <title>Mcp server deploy bash script - Amazon Bedrock AgentCore</title>
+        <title>LlamaIndex Agent with Bedrock AgentCore Integration - Amazon Bedrock AgentCore</title>
       
     
     
@@ -76,6 +76,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#llamaindex-agent-with-bedrock-agentcore-integration" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -112,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Mcp server deploy bash script
+              LlamaIndex Agent with Bedrock AgentCore Integration
             
           </span>
         </div>
@@ -1645,6 +1650,103 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Instructions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup Instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-a-python-environment-with-uv" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Create a Python Environment with uv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-install-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Install Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-understanding-the-agent-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Understanding the Agent Code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-configure-and-launch-with-bedrock-agentcore-toolkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Configure and Launch with Bedrock AgentCore Toolkit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-testing-your-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Testing Your Agent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How It Works
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Additional Resources
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1663,79 +1765,149 @@
   
 
 
-  <h1>Mcp server deploy bash script</h1>
+<h1 id="llamaindex-agent-with-bedrock-agentcore-integration">LlamaIndex Agent with Bedrock AgentCore Integration<a class="headerlink" href="#llamaindex-agent-with-bedrock-agentcore-integration" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Information</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent type</td>
+<td>Synchronous</td>
+</tr>
+<tr>
+<td>Agentic Framework</td>
+<td>LlamaIndex</td>
+</tr>
+<tr>
+<td>LLM model</td>
+<td>OpenAI GPT-4o-mini</td>
+</tr>
+<tr>
+<td>Components</td>
+<td>AgentCore Runtime, Yahoo Finance Tools</td>
+</tr>
+<tr>
+<td>Example complexity</td>
+<td>Easy</td>
+</tr>
+<tr>
+<td>SDK used</td>
+<td>Amazon BedrockAgentCore Python SDK</td>
+</tr>
+</tbody>
+</table>
+<p>This example demonstrates how to integrate a LlamaIndex agent with AWS Bedrock AgentCore, enabling you to deploy a financial assistant with tool-using capabilities as a managed service.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Python 3.10+</li>
+<li><a href="https://github.com/astral-sh/uv">uv</a> - Fast Python package installer and resolver</li>
+<li>AWS account with Bedrock access</li>
+<li>OpenAI API key (for the model client)</li>
+</ul>
+<h2 id="setup-instructions">Setup Instructions<a class="headerlink" href="#setup-instructions" title="Permanent link">&para;</a></h2>
+<h3 id="1-create-a-python-environment-with-uv">1. Create a Python Environment with uv<a class="headerlink" href="#1-create-a-python-environment-with-uv" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install uv if you don&#39;t have it already</span>
+pip<span class="w"> </span>install<span class="w"> </span>uv
 
-<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
-<span class="c1"># Streamlined deployment script for MCP Server on AgentCore Runtime</span>
-
-<span class="nb">set</span><span class="w"> </span>-e
-
-<span class="nv">STACK_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">mcp</span><span class="p">-server-demo</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="nv">REGION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">us</span><span class="p">-west-2</span><span class="si">}</span><span class="s2">&quot;</span>
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;MCP Server Deployment Script&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-
-<span class="c1"># Deploy CloudFormation stack</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;📦 Deploying CloudFormation stack...&quot;</span>
-aws<span class="w"> </span>cloudformation<span class="w"> </span>create-stack<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--template-body<span class="w"> </span>file://mcp-server-template.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--capabilities<span class="w"> </span>CAPABILITY_NAMED_IAM<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack creation initiated&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-
-<span class="c1"># Wait for stack to complete</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;⏳ Waiting for stack to complete (this takes ~10-15 minutes)...&quot;</span>
-aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>stack-create-complete<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ Stack deployment complete!&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-
-<span class="c1"># Get stack outputs</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;📋 Retrieving stack outputs...&quot;</span>
-<span class="nv">CLIENT_ID</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`CognitoUserPoolClientId`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span><span class="k">)</span>
-
-<span class="nv">AGENT_ARN</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`MCPServerRuntimeArn`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--region<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">&quot;</span><span class="k">)</span>
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✅ Deployment Complete!&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Stack Name: </span><span class="nv">$STACK_NAME</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Region: </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Client ID: </span><span class="nv">$CLIENT_ID</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Agent ARN: </span><span class="nv">$AGENT_ARN</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Test Credentials:&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  Username: testuser&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  Password: MyPassword123!&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Next Steps:&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;==========================================&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Test your MCP server:&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  ./test.sh </span><span class="nv">$STACK_NAME</span><span class="s2"> </span><span class="nv">$REGION</span><span class="s2">&quot;</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="c1"># Create and activate a virtual environment</span>
+uv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
 </code></pre></div>
+<h3 id="2-install-requirements">2. Install Requirements<a class="headerlink" href="#2-install-requirements" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+<h3 id="3-understanding-the-agent-code">3. Understanding the Agent Code<a class="headerlink" href="#3-understanding-the-agent-code" title="Permanent link">&para;</a></h3>
+<p>The <code>llama_agent_hello_world.py</code> file contains a LlamaIndex agent with financial tools and basic math capabilities, integrated with Bedrock AgentCore:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.core.agent.workflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionAgent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.llms.openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">llama_index.tools.yahoo_finance</span><span class="w"> </span><span class="kn">import</span> <span class="n">YahooFinanceToolSpec</span>
+
+<span class="c1"># Define custom function tools</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">multiply</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multiply two numbers and returns the product&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add two numbers and returns the sum&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+
+<span class="c1"># Add other predefined tools</span>
+<span class="n">finance_tools</span> <span class="o">=</span> <span class="n">YahooFinanceToolSpec</span><span class="p">()</span><span class="o">.</span><span class="n">to_tool_list</span><span class="p">()</span>
+<span class="n">finance_tools</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">multiply</span><span class="p">,</span> <span class="n">add</span><span class="p">])</span>
+
+<span class="c1"># Create an agent workflow with our tools</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">FunctionAgent</span><span class="p">(</span>
+    <span class="n">tools</span><span class="o">=</span><span class="n">finance_tools</span><span class="p">,</span>
+    <span class="n">llm</span><span class="o">=</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">),</span>
+    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bedrock_agentcore.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">BedrockAgentCoreApp</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">BedrockAgentCoreApp</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">entrypoint</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="c1"># Run the agent</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">,</span><span class="s2">&quot;What is the current stock price of AMZN?&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">content</span>
+
+<span class="c1"># Run the agent</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="4-configure-and-launch-with-bedrock-agentcore-toolkit">4. Configure and Launch with Bedrock AgentCore Toolkit<a class="headerlink" href="#4-configure-and-launch-with-bedrock-agentcore-toolkit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure your agent for deployment</span>
+agentcore<span class="w"> </span>configure<span class="w"> </span>-e<span class="w"> </span>llama_agent_hello_world.py
+
+<span class="c1"># Deploy your agent with OpenAI API key</span>
+agentcore<span class="w"> </span>launch<span class="w"> </span>--env<span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
+</code></pre></div>
+<h3 id="5-testing-your-agent">5. Testing Your Agent<a class="headerlink" href="#5-testing-your-agent" title="Permanent link">&para;</a></h3>
+<p>You can test your agent locally before deploying to the cloud:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Launch locally with your OpenAI API key</span>
+agentcore<span class="w"> </span>launch<span class="w"> </span>-l<span class="w"> </span>--env<span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
+
+<span class="c1"># Invoke the agent with a query</span>
+agentcore<span class="w"> </span>invoke<span class="w"> </span>-l<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;:&quot;Price of AMZN stock today&quot;}&#39;</span>
+</code></pre></div>
+<p>For cloud deployment, remove the <code>-l</code> flag:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy to cloud</span>
+agentcore<span class="w"> </span>launch<span class="w"> </span>--env<span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
+
+<span class="c1"># Invoke the deployed agent</span>
+agentcore<span class="w"> </span>invoke<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;:&quot;Price of AMZN stock today&quot;}&#39;</span>
+</code></pre></div>
+<p>The agent will:
+1. Process your financial query
+2. Use the Yahoo Finance tools to fetch real-time stock data
+3. Provide a response with the requested financial information
+4. Perform calculations if needed using the math tools</p>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<p>This agent uses LlamaIndex's agent framework to create a financial assistant that can:</p>
+<ol>
+<li>Process natural language queries about stocks and financial data</li>
+<li>Access real-time stock information through Yahoo Finance tools</li>
+<li>Perform basic mathematical operations when needed</li>
+<li>Provide comprehensive responses based on the data</li>
+</ol>
+<p>The agent is wrapped with the Bedrock AgentCore framework, which handles:
+- Deployment to AWS
+- Scaling and management
+- Request/response handling
+- Environment variable management</p>
+<h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.llamaindex.ai/en/stable/use_cases/agents/">LlamaIndex Documentation</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agents-core.html">Bedrock AgentCore Documentation</a></li>
+<li><a href="https://platform.openai.com/docs/api-reference">OpenAI API Documentation</a></li>
+<li><a href="https://pypi.org/project/yfinance/">Yahoo Finance API Documentation</a></li>
+</ul>
 
 
 
