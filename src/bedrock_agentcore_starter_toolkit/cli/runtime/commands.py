@@ -434,9 +434,16 @@ def configure(
             headers_info = f"Request Headers Allowlist: [dim]{len(headers)} headers configured[/dim]\n"
 
         execution_role_display = "Auto-create" if not result.execution_role else result.execution_role
-        memory_info = "Short-term memory (30-day retention)"
-        if disable_memory:
+        saved_config = load_config(result.config_path)
+        saved_agent = saved_config.get_agent_config(agent_name)
+
+        # Display memory status based on actual configuration
+        if saved_agent.memory.mode == "NO_MEMORY":
             memory_info = "Disabled"
+        elif saved_agent.memory.mode == "STM_AND_LTM":
+            memory_info = "Short-term + Long-term memory (30-day retention)"
+        else:  # STM_ONLY
+            memory_info = "Short-term memory (30-day retention)"
 
         lifecycle_info = ""
         if idle_timeout or max_lifetime:
@@ -598,6 +605,7 @@ def launch(
                 use_codebuild=not local_build,
                 env_vars=env_vars,
                 auto_update_on_conflict=auto_update_on_conflict,
+                console=console,
             )
 
         project_config = load_config(config_path)
