@@ -82,15 +82,14 @@ def _prompt_for_requirements_file(prompt_text: str, source_path: str, default: s
     response = prompt(prompt_text, completer=PathCompleter(), complete_while_typing=True, default=default)
 
     if response.strip():
-        # Validate file exists and is in source directory
+        # Validate file exists and is within project boundaries
         req_file = Path(response.strip()).resolve()
-        source_dir = Path(source_path).resolve()
+        project_root = Path.cwd().resolve()
 
-        # Check if requirements file is within source directory
+        # Check if requirements file is within project root (allows shared requirements)
         try:
-            if not req_file.is_relative_to(source_dir):
-                rel_source = get_relative_path(source_dir)
-                console.print(f"[red]Error: Requirements file must be in source directory: {rel_source}[/red]")
+            if not req_file.is_relative_to(project_root):
+                console.print("[red]Error: Requirements file must be within project directory[/red]")
                 return _prompt_for_requirements_file(prompt_text, source_path, default)
         except (ValueError, AttributeError):
             # is_relative_to not available or other error - skip validation
@@ -162,20 +161,28 @@ def _detect_entrypoint_in_source(source_path: str, non_interactive: bool = False
     # Use operations layer for detection
     detected = detect_entrypoint(source_dir)
 
-    if not detected:
-        # No fallback prompt - fail with clear error message
+    if len(detected) == 0:
+        # No files found - error
         rel_source = get_relative_path(source_dir)
         _handle_error(
             f"No entrypoint file found in {rel_source}\n"
             f"Expected one of: main.py, agent.py, app.py, __main__.py\n"
             f"Please specify full file path (e.g., {rel_source}/your_agent.py)"
         )
+    elif len(detected) > 1:
+        # Multiple files found - error with list
+        rel_source = get_relative_path(source_dir)
+        files_list = ", ".join(f.name for f in detected)
+        _handle_error(
+            f"Multiple entrypoint files found in {rel_source}: {files_list}\n"
+            f"Please specify full file path (e.g., {rel_source}/main.py)"
+        )
 
-    # Show detection and confirm
-    rel_entrypoint = get_relative_path(detected)
+    # Exactly one file - show detection and confirm
+    rel_entrypoint = get_relative_path(detected[0])
 
     _print_success(f"Using entrypoint file: [cyan]{rel_entrypoint}[/cyan]")
-    return str(detected)
+    return str(detected[0])
 
 
 # Define options at module level to avoid B008
@@ -241,6 +248,7 @@ def configure(
     execution_role: Optional[str] = typer.Option(None, "--execution-role", "-er"),
     code_build_execution_role: Optional[str] = typer.Option(None, "--code-build-execution-role", "-cber"),
     ecr_repository: Optional[str] = typer.Option(None, "--ecr", "-ecr"),
+    s3_bucket: Optional[str] = typer.Option(None, "--s3", "-s3", help="S3 bucket for direct_code_deploy deployment"),
     container_runtime: Optional[str] = typer.Option(None, "--container-runtime", "-ctr"),
     requirements_file: Optional[str] = typer.Option(
         None, "--requirements-file", "-rf", help="Path to requirements file"
@@ -257,11 +265,44 @@ def configure(
         help="Comma-separated list of allowed request headers "
         "(Authorization or X-Amzn-Bedrock-AgentCore-Runtime-Custom-*)",
     ),
+    vpc: bool = typer.Option(
+        False, "--vpc", help="Enable VPC networking mode (requires --subnets and --security-groups)"
+    ),
+    subnets: Optional[str] = typer.Option(
+        None,
+        "--subnets",
+        help="Comma-separated list of subnet IDs (e.g., subnet-abc123,subnet-def456). Required with --vpc.",
+    ),
+    security_groups: Optional[str] = typer.Option(
+        None,
+        "--security-groups",
+        help="Comma-separated list of security group IDs (e.g., sg-xyz789). Required with --vpc.",
+    ),
+    idle_timeout: Optional[int] = typer.Option(
+        None,
+        "--idle-timeout",
+        help="Idle runtime session timeout in seconds (60-28800, default: 900)",
+        min=60,
+        max=28800,
+    ),
+    max_lifetime: Optional[int] = typer.Option(
+        None,
+        "--max-lifetime",
+        help="Maximum instance lifetime in seconds (60-28800, default: 28800)",
+        min=60,
+        max=28800,
+    ),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
     region: Optional[str] = typer.Option(None, "--region", "-r"),
     protocol: Optional[str] = typer.Option(None, "--protocol", "-p", help="Server protocol (HTTP or MCP or A2A)"),
     non_interactive: bool = typer.Option(
         False, "--non-interactive", "-ni", help="Skip prompts; use defaults unless overridden"
+    ),
+    deployment_type: Optional[str] = typer.Option(
+        None, "--deployment-type", "-dt", help="Deployment type (container or direct_code_deploy)"
+    ),
+    runtime: Optional[str] = typer.Option(
+        None, "--runtime", "-rt", help="Python runtime version for direct_code_deploy (e.g., PYTHON_3_10, PYTHON_3_11)"
     ),
 ):
     """Configure a Bedrock AgentCore agent interactively or with parameters.
@@ -277,11 +318,69 @@ def configure(
     if protocol and protocol.upper() not in ["HTTP", "MCP", "A2A"]:
         _handle_error("Error: --protocol must be either HTTP or MCP or A2A")
 
+    # Validate VPC configuration
+    vpc_subnets = None
+    vpc_security_groups = None
+
+    if vpc:
+        # VPC mode requires both subnets and security groups
+        if not subnets or not security_groups:
+            _handle_error(
+                "VPC mode requires both --subnets and --security-groups.\n"
+                "Example: agentcore configure --entrypoint my_agent.py --vpc "
+                "--subnets subnet-abc123,subnet-def456 --security-groups sg-xyz789"
+            )
+
+        # Parse and validate subnet IDs - UPDATED VALIDATION
+        vpc_subnets = [s.strip() for s in subnets.split(",") if s.strip()]
+        for subnet_id in vpc_subnets:
+            # Format: subnet-{8-17 hex characters}
+            if not subnet_id.startswith("subnet-"):
+                _handle_error(
+                    f"Invalid subnet ID format: {subnet_id}\nSubnet IDs must start with 'subnet-' (e.g., subnet-abc123)"
+                )
+            # Check minimum length (subnet- + at least 8 chars)
+            if len(subnet_id) < 15:  # "subnet-" (7) + 8 chars = 15
+                _handle_error(
+                    f"Invalid subnet ID format: {subnet_id}\nSubnet ID is too short. Expected format: subnet-xxxxxxxx"
+                )
+
+        # Parse and validate security group IDs - UPDATED VALIDATION
+        vpc_security_groups = [sg.strip() for sg in security_groups.split(",") if sg.strip()]
+        for sg_id in vpc_security_groups:
+            # Format: sg-{8-17 hex characters}
+            if not sg_id.startswith("sg-"):
+                _handle_error(
+                    f"Invalid security group ID format: {sg_id}\n"
+                    f"Security group IDs must start with 'sg-' (e.g., sg-abc123)"
+                )
+            # Check minimum length (sg- + at least 8 chars)
+            if len(sg_id) < 11:  # "sg-" (3) + 8 chars = 11
+                _handle_error(
+                    f"Invalid security group ID format: {sg_id}\n"
+                    f"Security group ID is too short. Expected format: sg-xxxxxxxx"
+                )
+
+        _print_success(
+            f"VPC mode enabled with {len(vpc_subnets)} subnets and {len(vpc_security_groups)} security groups"
+        )
+
+    elif subnets or security_groups:
+        # Error: VPC resources provided without --vpc flag
+        _handle_error(
+            "The --subnets and --security-groups flags require --vpc flag.\n"
+            "Use: agentcore configure --entrypoint my_agent.py --vpc --subnets ... --security-groups ..."
+        )
+    # Validate lifecycle configuration
+    if idle_timeout is not None and max_lifetime is not None:
+        if idle_timeout > max_lifetime:
+            _handle_error(f"Error: --idle-timeout ({idle_timeout}s) must be <= --max-lifetime ({max_lifetime}s)")
+
     console.print("[cyan]Configuring Bedrock AgentCore...[/cyan]")
 
     # Create configuration manager early for consistent prompting
     config_path = Path.cwd() / ".bedrock_agentcore.yaml"
-    config_manager = ConfigurationManager(config_path, non_interactive)
+    config_manager = ConfigurationManager(config_path, non_interactive, region=region)
 
     # Interactive entrypoint selection
     if not entrypoint:
@@ -302,6 +401,17 @@ def configure(
 
     # Resolve the entrypoint_input (handles both file and directory)
     entrypoint_path = Path(entrypoint_input).resolve()
+
+    # Validate that the path is within the current directory
+    current_dir = Path.cwd().resolve()
+    try:
+        entrypoint_path.relative_to(current_dir)
+    except ValueError:
+        _handle_error(
+            f"Path must be within the current directory: {entrypoint_input}\n"
+            f"External paths are not supported for project portability.\n"
+            f"Consider copying the file into your project directory."
+        )
 
     if entrypoint_path.is_file():
         # It's a file - use directly as entrypoint
@@ -329,26 +439,264 @@ def configure(
     if not valid:
         _handle_error(error)
 
+    def _validate_deployment_type_compatibility(agent_name: str, deployment_type: str):
+        """Validate that deployment type is compatible with existing agent configuration."""
+        if config_manager.existing_config and config_manager.existing_config.name == agent_name:
+            existing_deployment_type = config_manager.existing_config.deployment_type
+            if deployment_type and deployment_type != existing_deployment_type:
+                _handle_error(
+                    f"Cannot change deployment type from '{existing_deployment_type}' to "
+                    f"'{deployment_type}' for existing agent '{agent_name}'.\n"
+                    f"To change deployment types, first destroy the existing agent:\n"
+                    f"  agentcore destroy --agent {agent_name}\n"
+                    f"Then reconfigure with the new deployment type."
+                )
+
+    # Check for existing agent configuration and validate deployment type compatibility
+    _validate_deployment_type_compatibility(agent_name, deployment_type)
+
     # Handle dependency file selection with simplified logic
     final_requirements_file = _handle_requirements_file_display(requirements_file, non_interactive, source_path)
+
+    def _validate_cli_args(
+        deployment_type, runtime, ecr_repository, s3_bucket, direct_code_deploy_available, prereq_error
+    ):
+        """Validate CLI arguments."""
+        if deployment_type and deployment_type not in ["container", "direct_code_deploy"]:
+            _handle_error("Error: --deployment-type must be either 'container' or 'direct_code_deploy'")
+
+        if runtime:
+            valid_runtimes = ["PYTHON_3_10", "PYTHON_3_11", "PYTHON_3_12", "PYTHON_3_13"]
+            if runtime not in valid_runtimes:
+                _handle_error(f"Error: --runtime must be one of: {', '.join(valid_runtimes)}")
+
+        if runtime and deployment_type and deployment_type != "direct_code_deploy":
+            _handle_error("Error: --runtime can only be used with --deployment-type direct_code_deploy")
+
+        # Check for incompatible ECR and runtime flags
+        if ecr_repository and runtime:
+            _handle_error(
+                "Error: --ecr and --runtime are incompatible. "
+                "Use --ecr for container deployment or --runtime for direct_code_deploy deployment."
+            )
+
+        if ecr_repository and deployment_type == "direct_code_deploy":
+            _handle_error("Error: --ecr can only be used with container deployment, not direct_code_deploy")
+
+        # Check for incompatible S3 and ECR flags
+        if s3_bucket and ecr_repository:
+            _handle_error(
+                "Error: --s3 and --ecr are incompatible. "
+                "Use --s3 for direct_code_deploy deployment or --ecr for container deployment."
+            )
+
+        if s3_bucket and deployment_type == "container":
+            _handle_error("Error: --s3 can only be used with direct_code_deploy deployment, not container")
+
+        # Only fail if user explicitly requested direct_code_deploy deployment
+        if (deployment_type == "direct_code_deploy" or runtime or s3_bucket) and not direct_code_deploy_available:
+            _handle_error(f"Error: Direct Code Deploy deployment unavailable ({prereq_error})")
+
+        return runtime
+
+    def _get_default_runtime():
+        """Get default runtime based on current Python version."""
+        import sys
+
+        current_py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+        if current_py_version in ["3.10", "3.11", "3.12", "3.13"]:
+            return f"PYTHON_{sys.version_info.major}_{sys.version_info.minor}"
+        else:
+            console.print(f"[dim]Note: Current Python {current_py_version} not supported, using python3.11[/dim]")
+            return "PYTHON_3_11"
+
+    def _prompt_for_runtime():
+        """Interactive runtime selection."""
+        runtime_options = ["PYTHON_3_10", "PYTHON_3_11", "PYTHON_3_12", "PYTHON_3_13"]
+
+        console.print("\n[dim]Select Python runtime version:[/dim]")
+        for idx, runtime in enumerate(runtime_options, 1):
+            console.print(f"  {idx}. {runtime}")
+
+        default_runtime = _get_default_runtime()
+        default_idx = str(runtime_options.index(default_runtime) + 1)
+
+        while True:
+            choice = prompt(f"Choice [{default_idx}]: ", default=default_idx).strip()
+            if choice in ["1", "2", "3", "4"]:
+                return runtime_options[int(choice) - 1]
+            console.print("[red]Invalid choice. Please enter 1-4.[/red]")
+
+    def _determine_deployment_config(
+        deployment_type, runtime, ecr_repository, s3_bucket, non_interactive, direct_code_deploy_available, prereq_error
+    ):
+        """Determine final deployment_type and runtime_type."""
+        # Case 3: Only runtime provided -> default to direct_code_deploy
+        if runtime and not deployment_type:
+            deployment_type = "direct_code_deploy"
+
+        # Case 4: Only ECR repository provided -> default to container
+        if ecr_repository and not deployment_type:
+            deployment_type = "container"
+
+        # Case 5: Only S3 bucket provided -> default to direct_code_deploy
+        if s3_bucket and not deployment_type:
+            deployment_type = "direct_code_deploy"
+
+        # Case 1 & 3: Both provided or runtime-only
+        if deployment_type == "direct_code_deploy" and runtime:
+            return "direct_code_deploy", runtime
+
+        # Case 2: Only deployment_type=direct_code_deploy provided
+        if deployment_type == "direct_code_deploy":
+            if non_interactive:
+                return "direct_code_deploy", _get_default_runtime()
+            else:
+                return "direct_code_deploy", _prompt_for_runtime()
+
+        # Container deployment
+        if deployment_type == "container":
+            return "container", None
+
+        # Non-interactive mode with no CLI args - use defaults
+        if non_interactive:
+            if direct_code_deploy_available:
+                return "direct_code_deploy", _get_default_runtime()
+            else:
+                console.print(
+                    f"[yellow]Direct Code Deploy unavailable ({prereq_error}), using Container deployment[/yellow]"
+                )
+                return "container", None
+
+        # Interactive mode with no CLI args - use existing logic
+        return None, None
+
+    # Check direct_code_deploy prerequisites (uv and zip availability)
+    def _check_direct_code_deploy_available():
+        """Check if direct_code_deploy prerequisites are met."""
+        import shutil
+
+        if not shutil.which("uv"):
+            return False, "uv not found (install from: https://docs.astral.sh/uv/)"
+        if not shutil.which("zip"):
+            return False, "zip utility not found"
+        return True, None
+
+    direct_code_deploy_available, prereq_error = _check_direct_code_deploy_available()
+
+    # Validate CLI arguments
+    runtime = _validate_cli_args(
+        deployment_type, runtime, ecr_repository, s3_bucket, direct_code_deploy_available, prereq_error
+    )
+
+    # Determine deployment configuration
+    console.print("\n🚀 [cyan]Deployment Configuration[/cyan]")
+    final_deployment_type, runtime_type = _determine_deployment_config(
+        deployment_type,
+        runtime,
+        ecr_repository,
+        s3_bucket,
+        non_interactive,
+        direct_code_deploy_available,
+        prereq_error,
+    )
+
+    if final_deployment_type:
+        # CLI args provided or non-interactive with defaults
+        deployment_type = final_deployment_type
+        if deployment_type == "direct_code_deploy":
+            # Convert PYTHON_3_11 -> python3.11 for display
+            display_version = runtime_type.lower().replace("python_", "python").replace("_", ".")
+            _print_success(f"Using: Direct Code Deploy ({display_version})")
+        else:
+            _print_success("Using: Container")
+    else:
+        # Interactive mode
+        if direct_code_deploy_available:
+            deployment_options = [
+                ("Direct Code Deploy (recommended) - Python only, no Docker required", "direct_code_deploy"),
+                ("Container - For custom runtimes or complex dependencies", "container"),
+            ]
+        else:
+            console.print(
+                f"[yellow]Warning: Direct Code Deploy deployment unavailable ({prereq_error}). "
+                f"Falling back to Container deployment.[/yellow]"
+            )
+            deployment_options = [
+                ("Container - Docker-based deployment", "container"),
+            ]
+
+        console.print("[dim]Select deployment type:[/dim]")
+        for idx, (desc, _) in enumerate(deployment_options, 1):
+            console.print(f"  {idx}. {desc}")
+
+        if len(deployment_options) == 1:
+            deployment_type = "container"
+            _print_success("Deployment type: Container")
+            runtime_type = None
+        else:
+            while True:
+                choice = prompt("Choice [1]: ", default="1").strip()
+                if choice in ["1", "2"]:
+                    deployment_type = deployment_options[int(choice) - 1][1]
+                    break
+                console.print("[red]Invalid choice. Please enter 1 or 2.[/red]")
+
+            if deployment_type == "direct_code_deploy":
+                runtime_type = _prompt_for_runtime()
+                display_version = runtime_type.lower().replace("_", ".")
+                _print_success(f"Deployment type: Direct Code Deploy ({display_version})")
+            else:
+                runtime_type = None
+                _print_success("Deployment type: Container")
+
+    # Validate deployment type compatibility with existing configuration (for interactive mode)
+    _validate_deployment_type_compatibility(agent_name, deployment_type)
 
     # Interactive prompts for missing values - clean and elegant
     if not execution_role:
         execution_role = config_manager.prompt_execution_role()
 
-    # Handle ECR repository
+    # Handle ECR repository (only for container deployments)
     auto_create_ecr = True
-    if ecr_repository and ecr_repository.lower() == "auto":
-        # User explicitly requested auto-creation
-        ecr_repository = None
-        auto_create_ecr = True
-        _print_success("Will auto-create ECR repository")
-    elif not ecr_repository:
-        ecr_repository, auto_create_ecr = config_manager.prompt_ecr_repository()
+    if deployment_type == "container":
+        if ecr_repository and ecr_repository.lower() == "auto":
+            # User explicitly requested auto-creation
+            ecr_repository = None
+            auto_create_ecr = True
+            _print_success("Will auto-create ECR repository")
+        elif not ecr_repository:
+            ecr_repository, auto_create_ecr = config_manager.prompt_ecr_repository()
+        else:
+            # User provided a specific ECR repository
+            auto_create_ecr = False
+            _print_success(f"Using existing ECR repository: [dim]{ecr_repository}[/dim]")
     else:
-        # User provided a specific ECR repository
+        # Code zip doesn't need ECR
+        ecr_repository = None
         auto_create_ecr = False
-        _print_success(f"Using existing ECR repository: [dim]{ecr_repository}[/dim]")
+
+    # Handle S3 bucket (only for direct_code_deploy deployments)
+    final_s3_bucket = None
+    auto_create_s3 = True
+    if deployment_type == "direct_code_deploy":
+        if s3_bucket and s3_bucket.lower() == "auto":
+            # User explicitly requested auto-creation
+            final_s3_bucket = None
+            auto_create_s3 = True
+            _print_success("Will auto-create S3 bucket")
+        elif not s3_bucket:
+            final_s3_bucket, auto_create_s3 = config_manager.prompt_s3_bucket()
+        else:
+            # User provided a specific S3 bucket
+            final_s3_bucket = s3_bucket
+            auto_create_s3 = False
+            _print_success(f"Using existing S3 bucket: [dim]{s3_bucket}[/dim]")
+    else:
+        # Container doesn't need S3 bucket
+        final_s3_bucket = None
+        auto_create_s3 = False
 
     # Handle OAuth authorization configuration
     oauth_config = None
@@ -387,8 +735,10 @@ def configure(
             execution_role=execution_role,
             code_build_execution_role=code_build_execution_role,
             ecr_repository=ecr_repository,
+            s3_path=final_s3_bucket,
             container_runtime=container_runtime,
             auto_create_ecr=auto_create_ecr,
+            auto_create_s3=auto_create_s3,
             enable_observability=not disable_otel,
             memory_mode=memory_mode_value,
             requirements_file=final_requirements_file,
@@ -399,6 +749,13 @@ def configure(
             protocol=protocol.upper() if protocol else None,
             non_interactive=non_interactive,
             source_path=source_path,
+            vpc_enabled=vpc,
+            vpc_subnets=vpc_subnets,
+            vpc_security_groups=vpc_security_groups,
+            idle_timeout=idle_timeout,
+            max_lifetime=max_lifetime,
+            deployment_type=deployment_type,
+            runtime_type=runtime_type,
         )
 
         # Prepare authorization info for summary
@@ -412,26 +769,65 @@ def configure(
             headers = request_header_config.get("requestHeaderAllowlist", [])
             headers_info = f"Request Headers Allowlist: [dim]{len(headers)} headers configured[/dim]\n"
 
+        network_info = "Public"
+        if vpc:
+            network_info = f"VPC ({len(vpc_subnets)} subnets, {len(vpc_security_groups)} security groups)"
+
         execution_role_display = "Auto-create" if not result.execution_role else result.execution_role
-        memory_info = "Short-term memory (30-day retention)"
-        if disable_memory:
+        saved_config = load_config(result.config_path)
+        saved_agent = saved_config.get_agent_config(agent_name)
+
+        # Display memory status based on actual configuration
+        if saved_agent.memory.mode == "NO_MEMORY":
             memory_info = "Disabled"
+        elif saved_agent.memory.mode == "STM_AND_LTM":
+            memory_info = "Short-term + Long-term memory (30-day retention)"
+        else:  # STM_ONLY
+            memory_info = "Short-term memory (30-day retention)"
+
+        lifecycle_info = ""
+        if idle_timeout or max_lifetime:
+            lifecycle_info = "\n[bold]Lifecycle Settings:[/bold]\n"
+            if idle_timeout:
+                lifecycle_info += f"Idle Timeout: [cyan]{idle_timeout}s ({idle_timeout // 60} minutes)[/cyan]\n"
+            if max_lifetime:
+                lifecycle_info += f"Max Lifetime: [cyan]{max_lifetime}s ({max_lifetime // 3600} hours)[/cyan]\n"
+
+        # Prepare deployment-specific info
+        agent_details_info = ""
+        config_info = ""
+        if deployment_type == "container":
+            ecr_display = "Auto-create" if result.auto_create_ecr else result.ecr_repository or "N/A"
+            config_info = f"ECR Repository: [cyan]{ecr_display}[/cyan]\n"
+        else:  # direct_code_deploy
+            runtime_display = (
+                result.runtime_type.lower().replace("python_", "python").replace("_", ".")
+                if result.runtime_type
+                else "N/A"
+            )
+            s3_display = "Auto-create" if result.auto_create_s3 else result.s3_path or "N/A"
+            agent_details_info = f"Runtime: [cyan]{runtime_display}[/cyan]\n"
+            config_info = f"S3 Bucket: [cyan]{s3_display}[/cyan]\n"
 
         console.print(
             Panel(
                 f"[bold]Agent Details[/bold]\n"
                 f"Agent Name: [cyan]{agent_name}[/cyan]\n"
-                f"Runtime: [cyan]{result.runtime}[/cyan]\n"
+                f"Deployment: [cyan]{deployment_type}[/cyan]\n"
                 f"Region: [cyan]{result.region}[/cyan]\n"
-                f"Account: [cyan]{result.account_id}[/cyan]\n\n"
+                f"Account: [cyan]{result.account_id}[/cyan]\n"
+                f"{agent_details_info}\n"
                 f"[bold]Configuration[/bold]\n"
                 f"Execution Role: [cyan]{execution_role_display}[/cyan]\n"
                 f"ECR Repository: [cyan]"
                 f"{'Auto-create' if result.auto_create_ecr else result.ecr_repository or 'N/A'}"
                 f"[/cyan]\n"
+                f"Network Mode: [cyan]{network_info}[/cyan]\n"
+                f"{config_info}"
                 f"Authorization: [cyan]{auth_info}[/cyan]\n\n"
                 f"{headers_info}\n"
                 f"Memory: [cyan]{memory_info}[/cyan]\n\n"
+                f"{lifecycle_info}\n"
                 f"📄 Config saved to: [dim]{result.config_path}[/dim]\n\n"
                 f"[bold]Next Steps:[/bold]\n"
                 f"   [cyan]agentcore launch[/cyan]",
@@ -451,20 +847,24 @@ def launch(
     agent: Optional[str] = typer.Option(
         None, "--agent", "-a", help="Agent name (use 'agentcore configure list' to see available agents)"
     ),
-    local: bool = typer.Option(
-        False, "--local", "-l", help="Local build + local runtime - requires Docker/Finch/Podman"
-    ),
+    local: bool = typer.Option(False, "--local", "-l", help="Run locally for development and testing"),
     local_build: bool = typer.Option(
         False,
         "--local-build",
         "-lb",
-        help="Build locally and deploy to cloud runtime - requires Docker/Finch/Podman",
+        help="Build locally and deploy to cloud (container deployment only)",
     ),
     auto_update_on_conflict: bool = typer.Option(
         False,
         "--auto-update-on-conflict",
         "-auc",
         help="Automatically update existing agent instead of failing with ConflictException",
+    ),
+    force_rebuild_deps: bool = typer.Option(
+        False,
+        "--force-rebuild-deps",
+        "-frd",
+        help="Force rebuild of dependencies even if cached (direct_code_deploy deployments only)",
     ),
     envs: List[str] = typer.Option(  # noqa: B008
         None, "--env", "-env", help="Environment variables for agent (format: KEY=VALUE)"
@@ -478,20 +878,21 @@ def launch(
 ):
     """Launch Bedrock AgentCore with three deployment modes.
 
-    🚀 DEFAULT (no flags): CodeBuild + cloud runtime (RECOMMENDED)
-       - Build ARM64 containers in the cloud with CodeBuild
+    🚀 DEFAULT (no flags): Cloud runtime (RECOMMENDED)
+       - direct_code_deploy deployment: Direct deploy Python code to runtime
+       - Container deployment: Build ARM64 containers in the cloud with CodeBuild
        - Deploy to Bedrock AgentCore runtime
        - No local Docker required
-       - CHANGED: CodeBuild is now the default (previously required --code-build flag)
 
-    💻 --local: Local build + local runtime
-       - Build container locally and run locally
-       - requires Docker/Finch/Podman
+    💻 --local: Local runtime
+       - Container deployment: Build and run container locally (requires Docker/Finch/Podman)
+       - direct_code_deploy deployment: Run Python script locally with uv
        - For local development and testing
 
     🔧 --local-build: Local build + cloud runtime
        - Build container locally with Docker
        - Deploy to Bedrock AgentCore runtime
+       - Only supported for container deployment type
        - requires Docker/Finch/Podman
        - Use when you need custom build control but want cloud deployment
 
@@ -513,6 +914,27 @@ def launch(
 
     config_path = Path.cwd() / ".bedrock_agentcore.yaml"
 
+    # Load config early to determine deployment type for proper messaging
+    project_config = load_config(config_path)
+    agent_config = project_config.get_agent_config(agent)
+    deployment_type = agent_config.deployment_type
+
+    # Validate deployment type compatibility early
+    if local_build or force_rebuild_deps:
+        if local_build and deployment_type == "direct_code_deploy":
+            _handle_error(
+                "Error: --local-build is only supported for container deployment type.\n"
+                "For direct_code_deploy deployment, use:\n"
+                "  • 'agentcore launch' (default)\n"
+                "  • 'agentcore launch --local' (local execution)"
+            )
+
+        if force_rebuild_deps and deployment_type != "direct_code_deploy":
+            _handle_error(
+                "Error: --force-rebuild-deps is only supported for direct_code_deploy deployment type.\n"
+                "Container deployments always rebuild dependencies."
+            )
+
     try:
         # Show launch mode with enhanced migration guidance
         if local:
@@ -530,23 +952,34 @@ def launch(
             console.print("[dim]   • Use when you need custom build control[/dim]\n")
         elif code_build:
             # Handle deprecated flag - treat as default
-            mode = "codebuild"
+            mode = "codebuild" if deployment_type == "container" else "cloud"
             console.print(f"[cyan]🚀 Launching Bedrock AgentCore ({mode} mode - RECOMMENDED)...[/cyan]")
-            console.print("[dim]   • Build ARM64 containers in the cloud with CodeBuild[/dim]")
-            console.print("[dim]   • No local Docker required[/dim]")
+            if deployment_type == "direct_code_deploy":
+                console.print("[dim]   • Deploy Python code directly to runtime[/dim]")
+                console.print("[dim]   • No Docker required[/dim]")
+            else:
+                console.print("[dim]   • Build ARM64 containers in the cloud with CodeBuild[/dim]")
+                console.print("[dim]   • No local Docker required[/dim]")
             console.print("[dim]   • Production-ready deployment[/dim]\n")
         else:
-            mode = "codebuild"
+            mode = "codebuild" if deployment_type == "container" else "cloud"
             console.print(f"[cyan]🚀 Launching Bedrock AgentCore ({mode} mode - RECOMMENDED)...[/cyan]")
-            console.print("[dim]   • Build ARM64 containers in the cloud with CodeBuild[/dim]")
-            console.print("[dim]   • No local Docker required (DEFAULT behavior)[/dim]")
+            if deployment_type == "direct_code_deploy":
+                console.print("[dim]   • Deploy Python code directly to runtime[/dim]")
+                console.print("[dim]   • No Docker required (DEFAULT behavior)[/dim]")
+            else:
+                console.print("[dim]   • Build ARM64 containers in the cloud with CodeBuild[/dim]")
+                console.print("[dim]   • No local Docker required (DEFAULT behavior)[/dim]")
             console.print("[dim]   • Production-ready deployment[/dim]\n")
 
             # Show deployment options hint for first-time users
             console.print("[dim]💡 Deployment options:[/dim]")
-            console.print("[dim]   • agentcore launch                → CodeBuild (current)[/dim]")
+            mode_name = "CodeBuild" if deployment_type == "container" else "Cloud"
+            console.print(f"[dim]   • agentcore launch                → {mode_name} (current)[/dim]")
             console.print("[dim]   • agentcore launch --local        → Local development[/dim]")
-            console.print("[dim]   • agentcore launch --local-build  → Local build + cloud deploy[/dim]\n")
+            if deployment_type == "container":
+                console.print("[dim]   • agentcore launch --local-build  → Local build + cloud deploy[/dim]")
+            console.print()
 
         # Use the operations module
         with console.status("[bold]Launching Bedrock AgentCore...[/bold]"):
@@ -568,10 +1001,10 @@ def launch(
                 use_codebuild=not local_build,
                 env_vars=env_vars,
                 auto_update_on_conflict=auto_update_on_conflict,
+                console=console,
+                force_rebuild_deps=force_rebuild_deps,
             )
 
-        project_config = load_config(config_path)
-        agent_config = project_config.get_agent_config(agent)
         # Handle result based on mode
         if result.mode == "local":
             _print_success(f"Docker image built: {result.tag}")
@@ -597,6 +1030,98 @@ def launch(
                 result.runtime.run_local(result.tag, result.port, result.env_vars)
             except KeyboardInterrupt:
                 console.print("\n[yellow]Stopped[/yellow]")
+
+        elif result.mode == "local_direct_code_deploy":
+            _print_success("Ready to run locally with uv run")
+            console.print(f"Starting server at http://localhost:{result.port}")
+            console.print("[yellow]Press Ctrl+C to stop[/yellow]\n")
+
+            try:
+                # The process was started in the launch function, just wait for it
+                import subprocess  # nosec B404
+
+                # Re-run the command in foreground for proper signal handling
+                source_dir = Path(agent_config.source_path) if agent_config.source_path else Path.cwd()
+                entrypoint_abs = Path(agent_config.entrypoint)
+
+                try:
+                    entrypoint_path = str(entrypoint_abs.relative_to(source_dir))
+                except ValueError:
+                    entrypoint_path = entrypoint_abs.name
+
+                # Prepare environment
+                local_env = dict(os.environ)
+                if result.env_vars:
+                    local_env.update(result.env_vars)
+                local_env.setdefault("PORT", str(result.port))
+
+                # Use the same dependency detection as direct_code_deploy deployment
+                from ...utils.runtime.entrypoint import detect_dependencies
+
+                dep_info = detect_dependencies(source_dir)
+
+                if not dep_info.found:
+                    _handle_error(
+                        f"No dependencies file found in {source_dir}.\n"
+                        "direct_code_deploy deployment requires either requirements.txt or pyproject.toml"
+                    )
+
+                # Use the configured Python version (e.g., PYTHON_3_11 -> 3.11)
+                python_version = agent_config.runtime_type.replace("PYTHON_", "").replace("_", ".")
+                cmd = [
+                    "uv",
+                    "run",
+                    "--isolated",
+                    "--python",
+                    python_version,
+                    "--with-requirements",
+                    dep_info.resolved_path,
+                    entrypoint_path,
+                ]
+
+                # Run from source directory (same as direct_code_deploy)
+                subprocess.run(cmd, cwd=source_dir, env=local_env, check=False)  # nosec B603
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Stopped[/yellow]")
+
+        elif result.mode == "direct_code_deploy":
+            # Code zip deployment success
+            agent_name = agent_config.name if agent_config else "unknown"
+            region = agent_config.aws.region if agent_config else "us-east-1"
+
+            deploy_panel = (
+                f"[bold]Agent Details:[/bold]\n"
+                f"Agent Name: [cyan]{agent_name}[/cyan]\n"
+                f"Agent ARN: [cyan]{result.agent_arn}[/cyan]\n"
+                f"Deployment Type: [cyan]Direct Code Deploy[/cyan]\n\n"
+                f"📦 Code package deployed to Bedrock AgentCore\n\n"
+                f"[bold]Next Steps:[/bold]\n"
+                f"   [cyan]agentcore status[/cyan]\n"
+                f'   [cyan]agentcore invoke \'{{"prompt": "Hello"}}\'[/cyan]'
+            )
+
+            # Add log information if we have agent_id
+            if result.agent_id:
+                runtime_logs, otel_logs = get_agent_log_paths(result.agent_id, deployment_type="direct_code_deploy")
+                follow_cmd, since_cmd = get_aws_tail_commands(runtime_logs)
+                deploy_panel += f"\n\n📋 [cyan]CloudWatch Logs:[/cyan]\n   {runtime_logs}\n   {otel_logs}\n\n"
+                # Only show GenAI Observability Dashboard if OTEL is enabled
+                if agent_config and agent_config.aws.observability.enabled:
+                    deploy_panel += (
+                        f"🔍 [cyan]GenAI Observability Dashboard:[/cyan]\n"
+                        f"   {get_genai_observability_url(region)}\n\n"
+                        f"⏱️  [dim]Note: Observability data may take up to 10 minutes to appear "
+                        f"after first launch[/dim]\n\n"
+                    )
+                deploy_panel += f"💡 [dim]Tail logs with:[/dim]\n   {follow_cmd}\n   {since_cmd}"
+
+            console.print(
+                Panel(
+                    deploy_panel,
+                    title="Deployment Success",
+                    border_style="bright_blue",
+                )
+            )
 
         elif result.mode == "codebuild":
             # Show deployment success panel
@@ -627,7 +1152,7 @@ def launch(
                     deploy_panel += (
                         f"🔍 [cyan]GenAI Observability Dashboard:[/cyan]\n"
                         f"   {get_genai_observability_url(region)}\n\n"
-                        f"⏱️  [dim]Note: Observability data may take up to 10 minutes to appear "
+                        f"[dim]Note: Observability data may take up to 10 minutes to appear "
                         f"after first launch[/dim]\n\n"
                     )
                 deploy_panel += f"💡 [dim]Tail logs with:[/dim]\n   {follow_cmd}\n   {since_cmd}"
@@ -710,7 +1235,13 @@ def _show_invoke_info_panel(agent_name: str, invoke_result=None, config=None):
     # CloudWatch logs and GenAI Observability Dashboard (if we have config with agent_id)
     if config and hasattr(config, "bedrock_agentcore") and config.bedrock_agentcore.agent_id:
         try:
-            runtime_logs, _ = get_agent_log_paths(config.bedrock_agentcore.agent_id)
+            # Get deployment type and session ID for direct_code_deploy specific logging
+            deployment_type = getattr(config, "deployment_type", None)
+            session_id = invoke_result.session_id if invoke_result else None
+
+            runtime_logs, _ = get_agent_log_paths(
+                config.bedrock_agentcore.agent_id, deployment_type=deployment_type, session_id=session_id
+            )
             follow_cmd, since_cmd = get_aws_tail_commands(runtime_logs)
             info_lines.append(f"Logs: {follow_cmd}")
             info_lines.append(f"      {since_cmd}")
@@ -983,11 +1514,6 @@ def status(
 
                     # Determine overall status
                     endpoint_status = endpoint_data.get("status", "Unknown") if endpoint_data else "Not Ready"
-                    # memory_info = ""
-                    # if hasattr(status_json["config"], "memory_id") and status_json["config"].get("memory_id"):
-                    #    memory_type = status_json["config"].get("memory_type", "Short-term")
-                    #    memory_id = status_json["config"].get("memory_id")
-                    #    memory_info = f"Memory: [cyan]{memory_type}[/cyan] ([dim]{memory_id}[/dim])\n"
                     if endpoint_status == "READY":
                         status_text = "Ready - Agent deployed and endpoint available"
                     else:
@@ -1004,6 +1530,26 @@ def status(
                         f"Region: [cyan]{status_json['config']['region']}[/cyan] | "
                         f"Account: [dim]{status_json['config'].get('account', 'Not available')}[/dim]\n\n"
                     )
+
+                    # Add network information
+                    network_mode = status_json.get("agent", {}).get("networkConfiguration", {}).get("networkMode")
+                    if network_mode == "VPC":
+                        # Get VPC info from agent response (not config)
+                        network_config = (
+                            status_json.get("agent", {}).get("networkConfiguration", {}).get("networkModeConfig", {})
+                        )
+                        vpc_subnets = network_config.get("subnets", [])
+                        vpc_security_groups = network_config.get("securityGroups", [])
+                        subnet_count = len(vpc_subnets)
+                        sg_count = len(vpc_security_groups)
+                        vpc_id = status_json.get("config", {}).get("network_vpc_id", "unknown")
+                        if vpc_id:
+                            panel_content += f"Network: [cyan]VPC[/cyan] ([dim]{vpc_id}[/dim])\n"
+                            panel_content += f"         {subnet_count} subnets, {sg_count} security groups\n\n"
+                        else:
+                            panel_content += "Network: [cyan]VPC[/cyan]\n\n"
+                    else:
+                        panel_content += "Network: [cyan]Public[/cyan]\n\n"
 
                     # Add memory status with proper provisioning indication
                     if "memory_id" in status_json.get("config", {}) and status_json["config"]["memory_id"]:
@@ -1034,24 +1580,40 @@ def status(
                         f"[/dim]\n\n"
                     )
 
+                    if status_json["config"].get("idle_timeout") or status_json["config"].get("max_lifetime"):
+                        panel_content += "[bold]Lifecycle Settings:[/bold]\n"
+
+                        idle = status_json["config"].get("idle_timeout")
+                        if idle:
+                            panel_content += f"Idle Timeout: [cyan]{idle}s ({idle // 60} minutes)[/cyan]\n"
+
+                        max_life = status_json["config"].get("max_lifetime")
+                        if max_life:
+                            panel_content += f"Max Lifetime: [cyan]{max_life}s ({max_life // 3600} hours)[/cyan]\n"
+
+                        panel_content += "\n"
+
                     # Add CloudWatch logs information
                     agent_id = status_json.get("config", {}).get("agent_id")
                     if agent_id:
                         try:
                             endpoint_name = endpoint_data.get("name")
-                            runtime_logs, otel_logs = get_agent_log_paths(agent_id, endpoint_name)
+                            project_config = load_config(config_path)
+                            agent_config = project_config.get_agent_config(agent)
+                            deployment_type = agent_config.deployment_type if agent_config else "container"
+                            runtime_logs, otel_logs = get_agent_log_paths(
+                                agent_id, endpoint_name, deployment_type=deployment_type
+                            )
                             follow_cmd, since_cmd = get_aws_tail_commands(runtime_logs)
 
                             panel_content += f"📋 [cyan]CloudWatch Logs:[/cyan]\n   {runtime_logs}\n   {otel_logs}\n\n"
 
                             # Only show GenAI Observability Dashboard if OTEL is enabled
-                            project_config = load_config(config_path)
-                            agent_config = project_config.get_agent_config(agent)
                             if agent_config and agent_config.aws.observability.enabled:
                                 panel_content += (
                                     f"🔍 [cyan]GenAI Observability Dashboard:[/cyan]\n"
                                     f"   {get_genai_observability_url(status_json['config']['region'])}\n\n"
-                                    f"⏱️  [dim]Note: Observability data may take up to 10 minutes to appear "
+                                    f"[dim]Note: Observability data may take up to 10 minutes to appear "
                                     f"after first launch[/dim]\n\n"
                                 )
 
@@ -1123,6 +1685,109 @@ def status(
                 f"   [cyan]agentcore launch[/cyan]",
                 title="❌ Status Error",
                 border_style="bright_blue",
+            )
+        )
+        raise typer.Exit(1) from e
+
+
+def stop_session(
+    session_id: Optional[str] = typer.Option(
+        None,
+        "--session-id",
+        "-s",
+        help="Runtime session ID to stop. If not provided, stops the last active session from invoke.",
+    ),
+    agent: Optional[str] = typer.Option(
+        None,
+        "--agent",
+        "-a",
+        help="Agent name (use 'agentcore configure list' to see available agents)",
+    ),
+):
+    """Stop an active runtime session.
+
+    Terminates the compute session for the running agent. This frees up resources
+    and ends any ongoing agent processing for that session.
+
+    🔍 How to find session IDs:
+       • Last invoked session is automatically tracked (no flag needed)
+       • Check 'agentcore status' to see the tracked session ID
+       • Check CloudWatch logs for session IDs from previous invokes
+       • Session IDs are also visible in the config file: .bedrock_agentcore.yaml
+
+    Session Lifecycle:
+       • Runtime sessions are created when you invoke an agent
+       • They automatically expire after the configured idle timeout
+       • Stopping a session immediately frees resources without waiting for timeout
+
+    Examples:
+        # Stop the last invoked session (most common)
+        agentcore stop-session
+
+        # Stop a specific session by ID
+        agentcore stop-session --session-id abc123xyz
+
+        # Stop last session for a specific agent
+        agentcore stop-session --agent my-agent
+
+        # Get current session ID before stopping
+        agentcore status  # Shows tracked session ID
+        agentcore stop-session
+    """
+    config_path = Path.cwd() / ".bedrock_agentcore.yaml"
+
+    try:
+        from ...operations.runtime import stop_runtime_session
+
+        result = stop_runtime_session(
+            config_path=config_path,
+            session_id=session_id,
+            agent_name=agent,
+        )
+
+        # Show result panel
+        status_icon = "✅" if result.status_code == 200 else "⚠️"
+        status_color = "green" if result.status_code == 200 else "yellow"
+
+        console.print(
+            Panel(
+                f"[{status_color}]{status_icon} {result.message}[/{status_color}]\n\n"
+                f"[bold]Session Details:[/bold]\n"
+                f"Session ID: [cyan]{result.session_id}[/cyan]\n"
+                f"Agent: [cyan]{result.agent_name}[/cyan]\n"
+                f"Status Code: [cyan]{result.status_code}[/cyan]\n\n"
+                f"[dim]💡 Runtime sessions automatically expire after idle timeout.\n"
+                f"   Manually stopping frees resources immediately.[/dim]",
+                title="Session Stopped",
+                border_style="bright_blue",
+            )
+        )
+
+    except FileNotFoundError:
+        _show_configuration_not_found_panel()
+        raise typer.Exit(1) from None
+    except ValueError as e:
+        console.print(
+            Panel(
+                f"[red]❌ Failed to Stop Session[/red]\n\n"
+                f"Error: {str(e)}\n\n"
+                f"[bold]How to find session IDs:[/bold]\n"
+                f"  • Check 'agentcore status' for the tracked session ID\n"
+                f"  • Check CloudWatch logs for session IDs\n"
+                f"  • Invoke the agent first to create a session\n\n"
+                f"[dim]Note: Runtime sessions cannot be listed. You can only stop\n"
+                f"the session from your last invoke or a specific session ID.[/dim]",
+                title="Stop Session Error",
+                border_style="red",
+            )
+        )
+        raise typer.Exit(1) from e
+    except Exception as e:
+        console.print(
+            Panel(
+                f"[red]❌ Unexpected Error[/red]\n\n{str(e)}",
+                title="Stop Session Error",
+                border_style="red",
             )
         )
         raise typer.Exit(1) from e

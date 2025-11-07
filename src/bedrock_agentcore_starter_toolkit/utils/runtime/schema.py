@@ -16,7 +16,7 @@ class MemoryConfig(BaseModel):
     """Memory configuration for BedrockAgentCore."""
 
     mode: Literal["STM_ONLY", "STM_AND_LTM", "NO_MEMORY"] = Field(
-        default="STM_ONLY", description="Memory mode - always has STM, optionally adds LTM"
+        default="NO_MEMORY", description="Memory mode - opt-in feature"
     )
     memory_id: Optional[str] = Field(default=None, description="Memory resource ID")
     memory_arn: Optional[str] = Field(default=None, description="Memory resource ARN")
@@ -99,6 +99,48 @@ class ProtocolConfiguration(BaseModel):
         return {"serverProtocol": self.server_protocol}
 
 
+class LifecycleConfiguration(BaseModel):
+    """Lifecycle configuration for runtime sessions."""
+
+    idle_runtime_session_timeout: Optional[int] = Field(
+        default=None,
+        description="Timeout in seconds for idle runtime sessions (60-28800)",
+        ge=60,
+        le=28800,
+    )
+    max_lifetime: Optional[int] = Field(
+        default=None, description="Maximum lifetime for the instance in seconds (60-28800)", ge=60, le=28800
+    )
+
+    @field_validator("max_lifetime")
+    @classmethod
+    def validate_lifecycle_relationship(cls, v: Optional[int], info) -> Optional[int]:
+        """Validate that max_lifetime >= idle_timeout if both are set."""
+        if v is None:
+            return v
+
+        idle = info.data.get("idle_runtime_session_timeout")
+        if idle is not None and v < idle:
+            raise ValueError(
+                f"max_lifetime ({v}s) must be greater than or equal to idle_runtime_session_timeout ({idle}s)"
+            )
+        return v
+
+    def to_aws_dict(self) -> dict:
+        """Convert to AWS API format with camelCase keys."""
+        result = {}
+        if self.idle_runtime_session_timeout is not None:
+            result["idleRuntimeSessionTimeout"] = self.idle_runtime_session_timeout
+        if self.max_lifetime is not None:
+            result["maxLifetime"] = self.max_lifetime
+        return result
+
+    @property
+    def has_custom_settings(self) -> bool:
+        """Check if any custom lifecycle settings are configured."""
+        return self.idle_runtime_session_timeout is not None or self.max_lifetime is not None
+
+
 class ObservabilityConfig(BaseModel):
     """Observability configuration."""
 
@@ -114,9 +156,12 @@ class AWSConfig(BaseModel):
     region: Optional[str] = Field(default=None, description="AWS region")
     ecr_repository: Optional[str] = Field(default=None, description="ECR repository URI")
     ecr_auto_create: bool = Field(default=False, description="Whether to auto-create ECR repository")
+    s3_path: Optional[str] = Field(default=None, description="S3 URI for code deployment")
+    s3_auto_create: bool = Field(default=False, description="Whether to auto-create S3 bucket")
     network_configuration: NetworkConfiguration = Field(default_factory=NetworkConfiguration)
     protocol_configuration: ProtocolConfiguration = Field(default_factory=ProtocolConfiguration)
     observability: ObservabilityConfig = Field(default_factory=ObservabilityConfig)
+    lifecycle_configuration: LifecycleConfiguration = Field(default_factory=LifecycleConfiguration)
 
     @field_validator("account")
     @classmethod
@@ -148,9 +193,17 @@ class BedrockAgentCoreAgentSchema(BaseModel):
     """Type-safe schema for BedrockAgentCore configuration."""
 
     name: str = Field(..., description="Name of the Bedrock AgentCore application")
-    entrypoint: str = Field(..., description="Entrypoint file path")
-    platform: str = Field(default="linux/amd64", description="Target platform")
-    container_runtime: str = Field(default="docker", description="Container runtime to use")
+    entrypoint: str = Field(..., description="Entrypoint file path (e.g., 'agent.py' or 'agent.py:handler')")
+    deployment_type: Literal["container", "direct_code_deploy"] = Field(
+        default="container", description="Deployment artifact type: container (Docker) or direct_code_deploy"
+    )
+    runtime_type: Optional[str] = Field(
+        default=None, description="Managed runtime version for direct_code_deploy (e.g., 'PYTHON_3_10', 'PYTHON_3_11')"
+    )
+    platform: str = Field(default="linux/amd64", description="Target platform (for container deployments)")
+    container_runtime: Optional[str] = Field(
+        default=None, description="Container runtime to use (for container deployments)"
+    )
     source_path: Optional[str] = Field(default=None, description="Directory containing agent source code")
     aws: AWSConfig = Field(default_factory=AWSConfig)
     bedrock_agentcore: BedrockAgentCoreDeploymentInfo = Field(default_factory=BedrockAgentCoreDeploymentInfo)
@@ -189,6 +242,8 @@ class BedrockAgentCoreAgentSchema(BaseModel):
                 errors.append("Missing 'aws.region' for cloud deployment")
             if not self.aws.account:
                 errors.append("Missing 'aws.account' for cloud deployment")
+
+            # Code zip specific validation (runtime_type is optional, will default to PYTHON_3_11)
 
         return errors
 

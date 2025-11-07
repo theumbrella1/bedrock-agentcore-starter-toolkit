@@ -215,7 +215,7 @@ class TestConfigurationManager:
             mock_success.assert_called_once_with("Request header allowlist configured with 3 headers")
 
     def test_configure_request_header_allowlist_with_existing_headers(self, tmp_path):
-        """Test _configure_request_header_allowlist with existing headers passed in."""
+        """Test _configure_request_header_allowlist uses hardcoded default (no longer accepts parameters)."""
         with (
             patch("bedrock_agentcore_starter_toolkit.utils.runtime.config.load_config_if_exists", return_value=None),
             patch(
@@ -226,16 +226,17 @@ class TestConfigurationManager:
         ):
             config_manager = ConfigurationManager(tmp_path / ".bedrock_agentcore.yaml")
 
-            existing_headers = "Authorization,X-Existing-Header"
-            # Mock user accepting existing headers
-            mock_prompt.return_value = existing_headers
+            # Mock user providing custom headers
+            custom_headers = "Authorization,X-Custom-Header"
+            mock_prompt.return_value = custom_headers
 
-            result = config_manager._configure_request_header_allowlist(existing_headers)
+            result = config_manager._configure_request_header_allowlist()
 
-            expected = {"requestHeaderAllowlist": ["Authorization", "X-Existing-Header"]}
+            expected = {"requestHeaderAllowlist": ["Authorization", "X-Custom-Header"]}
             assert result == expected
-            # Should use existing headers as default
-            mock_prompt.assert_called_once_with("Enter allowed request headers (comma-separated)", existing_headers)
+            # Should use hardcoded default (no longer auto-populates from config)
+            default_headers = "Authorization,X-Amzn-Bedrock-AgentCore-Runtime-Custom-*"
+            mock_prompt.assert_called_once_with("Enter allowed request headers (comma-separated)", default_headers)
 
     def test_configure_request_header_allowlist_with_whitespace(self, tmp_path):
         """Test _configure_request_header_allowlist handles whitespace properly."""
@@ -624,15 +625,11 @@ class TestConfigurationManager:
             mock_manager.list_memories.return_value = [{"id": "mem-123", "name": "memory"}]
             mock_mm.return_value = mock_manager
 
-            # User types 's' - now falls back to CREATE_NEW flow
-            mock_prompt.side_effect = [
-                "s",  # First prompt - invalid response falls through to create new
-                "no",  # Second prompt - LTM choice in _prompt_new_memory_config
-            ]
+            # User types 's' to skip memory configuration
+            mock_prompt.return_value = "s"
 
             action, value = config_manager.prompt_memory_selection()
 
-            # Update assertions to match actual behavior
-            assert action == "CREATE_NEW"
-            assert value == "STM_ONLY"
-            mock_success.assert_called_with("Using short-term memory only")
+            assert action == "SKIP"
+            assert value is None
+            mock_success.assert_called_with("Skipping memory configuration")

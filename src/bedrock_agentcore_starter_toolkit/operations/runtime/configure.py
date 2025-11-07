@@ -4,11 +4,13 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
+
+import boto3
 
 from ...cli.runtime.configuration_manager import ConfigurationManager
 from ...services.ecr import get_account_id, get_region
-from ...utils.runtime.config import merge_agent_config, save_config
+from ...utils.runtime.config import load_config_if_exists, merge_agent_config, save_config
 from ...utils.runtime.container import ContainerRuntime
 from ...utils.runtime.entrypoint import detect_dependencies
 from ...utils.runtime.schema import (
@@ -16,8 +18,10 @@ from ...utils.runtime.schema import (
     BedrockAgentCoreAgentSchema,
     BedrockAgentCoreDeploymentInfo,
     CodeBuildConfig,
+    LifecycleConfiguration,
     MemoryConfig,
     NetworkConfiguration,
+    NetworkModeConfig,
     ObservabilityConfig,
     ProtocolConfiguration,
 )
@@ -56,26 +60,30 @@ def get_relative_path(path: Path, base: Optional[Path] = None) -> str:
         return str(path_obj)
 
 
-def detect_entrypoint(source_path: Path) -> Optional[Path]:
-    """Detect entrypoint file in source directory.
+def detect_entrypoint(source_path: Path) -> List[Path]:
+    """Detect entrypoint files in source directory.
 
     Args:
         source_path: Directory to search for entrypoint
 
     Returns:
-        Path to detected entrypoint file, or None if not found
+        List of detected entrypoint files (empty list if none found)
     """
     ENTRYPOINT_CANDIDATES = ["agent.py", "app.py", "main.py", "__main__.py"]
 
     source_dir = Path(source_path)
+    found_files = []
+
     for candidate in ENTRYPOINT_CANDIDATES:
         candidate_path = source_dir / candidate
         if candidate_path.exists():
+            found_files.append(candidate_path)
             log.debug("Detected entrypoint: %s", candidate_path)
-            return candidate_path
 
-    log.debug("No entrypoint found in %s", source_path)
-    return None
+    if not found_files:
+        log.debug("No entrypoint found in %s", source_path)
+
+    return found_files
 
 
 def detect_requirements(source_path: Path):
@@ -116,8 +124,8 @@ def infer_agent_name(entrypoint_path: Path, base: Optional[Path] = None) -> str:
     if rel_entrypoint.endswith(".py"):
         rel_entrypoint = rel_entrypoint[:-3]
 
-    # Replace spaces and OS path separators with underscores
-    suggested_name = rel_entrypoint.replace(" ", "_").replace(os.sep, "_")
+    # Replace spaces, dashes, and OS path separators with underscores
+    suggested_name = rel_entrypoint.replace(" ", "_").replace("-", "_").replace(os.sep, "_")
 
     log.debug("Inferred agent name: %s from %s", suggested_name, get_relative_path(entrypoint_path, base))
     return suggested_name
@@ -129,11 +137,13 @@ def configure_bedrock_agentcore(
     execution_role: Optional[str] = None,
     code_build_execution_role: Optional[str] = None,
     ecr_repository: Optional[str] = None,
+    s3_path: Optional[str] = None,
     container_runtime: Optional[str] = None,
     auto_create_ecr: bool = True,
+    auto_create_s3: bool = True,
     auto_create_execution_role: bool = True,
     enable_observability: bool = True,
-    memory_mode: Literal["NO_MEMORY", "STM_ONLY", "STM_AND_LTM"] = "STM_ONLY",
+    memory_mode: Literal["NO_MEMORY", "STM_ONLY", "STM_AND_LTM"] = "NO_MEMORY",
     requirements_file: Optional[str] = None,
     authorizer_configuration: Optional[Dict[str, Any]] = None,
     request_header_configuration: Optional[Dict[str, Any]] = None,
@@ -142,6 +152,13 @@ def configure_bedrock_agentcore(
     protocol: Optional[str] = None,
     non_interactive: bool = False,
     source_path: Optional[str] = None,
+    vpc_enabled: bool = False,
+    vpc_subnets: Optional[List[str]] = None,
+    vpc_security_groups: Optional[List[str]] = None,
+    idle_timeout: Optional[int] = None,
+    max_lifetime: Optional[int] = None,
+    deployment_type: str = "direct_code_deploy",
+    runtime_type: Optional[str] = None,
 ) -> ConfigureResult:
     """Configure Bedrock AgentCore application with deployment settings.
 
@@ -164,6 +181,17 @@ def configure_bedrock_agentcore(
         protocol: agent server protocol, must be either HTTP or MCP or A2A
         non_interactive: Skip interactive prompts and use defaults
         source_path: Optional path to agent source code directory
+        vpc_enabled: Whether to enable VPC networking mode
+        vpc_subnets: List of subnet IDs for VPC mode
+        vpc_security_groups: List of security group IDs for VPC mode
+        idle_timeout: Idle runtime session timeout in seconds (60-28800).
+            If not specified, AWS API default (900s / 15 minutes) is used.
+        max_lifetime: Maximum instance lifetime in seconds (60-28800).
+            If not specified, AWS API default (28800s / 8 hours) is used.
+        deployment_type: Deployment type - "direct_code_deploy" (default) or "container"
+        runtime_type: Python runtime version for direct_code_deploy (e.g., "PYTHON_3_10", "PYTHON_3_11")
+        auto_create_s3: Whether to auto-create S3 bucket for direct_code_deploy deployment
+        s3_path: S3 path for direct_code_deploy deployment
 
     Returns:
         ConfigureResult model with configuration details
@@ -196,10 +224,12 @@ def configure_bedrock_agentcore(
         log.debug("AWS account ID: %s", account_id)
         log.debug("AWS region: %s", region)
 
-    # Initialize container runtime
-    if verbose:
-        log.debug("Initializing container runtime with: %s", container_runtime or "default")
-    runtime = ContainerRuntime(container_runtime)
+    # Initialize container runtime only for container deployments
+    runtime = None
+    if deployment_type == "container":
+        if verbose:
+            log.debug("Initializing container runtime with: %s", container_runtime or "default")
+        runtime = ContainerRuntime(container_runtime)
 
     # Handle execution role - convert to ARN if provided, otherwise use auto-create setting
     execution_role_arn = None
@@ -223,7 +253,7 @@ def configure_bedrock_agentcore(
                 log.debug("No execution role provided and auto-create disabled")
 
     # Pass region to ConfigurationManager so it can check for existing memories
-    config_manager = ConfigurationManager(build_dir / ".bedrock_agentcore.yaml", non_interactive)
+    config_manager = ConfigurationManager(build_dir / ".bedrock_agentcore.yaml", non_interactive, region=region)
 
     # Handle memory configuration
     memory_config = MemoryConfig()
@@ -244,7 +274,7 @@ def configure_bedrock_agentcore(
         else:  # STM_ONLY
             log.info("Memory configuration: Short-term memory only")
     else:
-        # Interactive mode: prompt user (only if memory not explicitly disabled)
+        # Interactive mode - let user choose
         action, value = config_manager.prompt_memory_selection()
 
         if action == "USE_EXISTING":
@@ -273,6 +303,21 @@ def configure_bedrock_agentcore(
     config_path = build_dir / ".bedrock_agentcore.yaml"
     memory_id = None
     memory_name = None
+
+    # Handle lifecycle configuration
+    lifecycle_config = LifecycleConfiguration()
+    if idle_timeout is not None or max_lifetime is not None:
+        lifecycle_config = LifecycleConfiguration(
+            idle_runtime_session_timeout=idle_timeout,
+            max_lifetime=max_lifetime,
+        )
+
+        if verbose:
+            log.debug("Lifecycle configuration:")
+            if idle_timeout:
+                log.debug("  Idle timeout: %ds (%d minutes)", idle_timeout, idle_timeout / 60)
+            if max_lifetime:
+                log.debug("  Max lifetime: %ds (%d hours)", max_lifetime, max_lifetime / 3600)
 
     if config_path.exists():
         try:
@@ -305,6 +350,42 @@ def configure_bedrock_agentcore(
         if verbose and execution_role_arn:
             log.debug("Using same role for CodeBuild: %s", codebuild_execution_role_arn)
 
+    if vpc_enabled:
+        if not vpc_subnets or not vpc_security_groups:
+            raise ValueError("VPC mode requires both subnets and security groups")
+
+        for subnet_id in vpc_subnets:
+            if not subnet_id.startswith("subnet-"):
+                raise ValueError(
+                    f"Invalid subnet ID format: {subnet_id}\nSubnet IDs must start with 'subnet-' (e.g., subnet-abc123)"
+                )
+            if len(subnet_id) < 15:  # "subnet-" (7) + 8 chars = 15
+                raise ValueError(
+                    f"Invalid subnet ID format: {subnet_id}\nSubnet ID is too short. Expected format: subnet-xxxxxxxx"
+                )
+
+        # Validate security group IDs format
+        for sg_id in vpc_security_groups:
+            if not sg_id.startswith("sg-"):
+                raise ValueError(
+                    f"Invalid security group ID format: {sg_id}\n"
+                    f"Security group IDs must start with 'sg-' (e.g., sg-abc123)"
+                )
+            if len(sg_id) < 11:  # "sg-" (3) + 8 chars = 11
+                raise ValueError(
+                    f"Invalid security group ID format: {sg_id}\n"
+                    f"Security group ID is too short. Expected format: sg-xxxxxxxx"
+                )
+
+        network_config = NetworkConfiguration(
+            network_mode="VPC",
+            network_mode_config=NetworkModeConfig(subnets=vpc_subnets, security_groups=vpc_security_groups),
+        )
+        log.info("Network mode: VPC with %d subnets and %d security groups", len(vpc_subnets), len(vpc_security_groups))
+    else:
+        network_config = NetworkConfiguration(network_mode="PUBLIC")
+        log.info("Network mode: PUBLIC")
+
     # Generate Dockerfile and .dockerignore
     bedrock_agentcore_name = None
     # Try to find the variable name for the Bedrock AgentCore instance in the file
@@ -332,40 +413,49 @@ def configure_bedrock_agentcore(
     else:
         dockerfile_output_dir = build_dir
 
-    # Generate Dockerfile in the correct location (no moving needed)
-    dockerfile_path = runtime.generate_dockerfile(
-        entrypoint_path,
-        dockerfile_output_dir,
-        bedrock_agentcore_name or "bedrock_agentcore",
-        region,
-        enable_observability,
-        requirements_file,
-        memory_id,
-        memory_name,
-        source_path,
-        protocol,
-    )
-    # Log with relative path for better readability
-    rel_dockerfile_path = get_relative_path(Path(dockerfile_path))
-    log.info("Generated Dockerfile: %s", rel_dockerfile_path)
+    if memory_config.mode == "NO_MEMORY":
+        memory_id = None
+        memory_name = None
+        log.debug("Cleared memory_id/name for Dockerfile generation (memory disabled)")
 
-    # Ensure .dockerignore exists at Docker build context location
-    if source_path:
-        # For source_path: .dockerignore at source directory (Docker build context)
-        source_dockerignore = Path(source_path) / ".dockerignore"
-        if not source_dockerignore.exists():
-            template_path = (
-                Path(__file__).parent.parent.parent / "utils" / "runtime" / "templates" / "dockerignore.template"
-            )
-            if template_path.exists():
-                source_dockerignore.write_text(template_path.read_text())
-                log.info("Generated .dockerignore: %s", source_dockerignore)
-        dockerignore_path = source_dockerignore
-    else:
-        # Legacy: .dockerignore at project root
-        dockerignore_path = build_dir / ".dockerignore"
-        if dockerignore_path.exists():
-            log.info("Generated .dockerignore: %s", dockerignore_path)
+    # Generate Dockerfile only for container deployments
+    dockerfile_path = None
+    if deployment_type == "container" and runtime:
+        dockerfile_path = runtime.generate_dockerfile(
+            entrypoint_path,
+            dockerfile_output_dir,
+            bedrock_agentcore_name or "bedrock_agentcore",
+            region,
+            enable_observability,
+            requirements_file,
+            memory_id,
+            memory_name,
+            source_path,
+            protocol,
+        )
+        # Log with relative path for better readability
+        rel_dockerfile_path = get_relative_path(Path(dockerfile_path))
+        log.info("Generated Dockerfile: %s", rel_dockerfile_path)
+
+    # Ensure .dockerignore exists at Docker build context location (only for container deployments)
+    dockerignore_path = None
+    if deployment_type == "container":
+        if source_path:
+            # For source_path: .dockerignore at source directory (Docker build context)
+            source_dockerignore = Path(source_path) / ".dockerignore"
+            if not source_dockerignore.exists():
+                template_path = (
+                    Path(__file__).parent.parent.parent / "utils" / "runtime" / "templates" / "dockerignore.template"
+                )
+                if template_path.exists():
+                    source_dockerignore.write_text(template_path.read_text())
+                    log.info("Generated .dockerignore: %s", source_dockerignore)
+            dockerignore_path = source_dockerignore
+        else:
+            # Legacy: .dockerignore at project root
+            dockerignore_path = build_dir / ".dockerignore"
+            if dockerignore_path.exists():
+                log.info("Generated .dockerignore: %s", dockerignore_path)
 
     # Handle project configuration (named agents)
     config_path = build_dir / ".bedrock_agentcore.yaml"
@@ -373,6 +463,32 @@ def configure_bedrock_agentcore(
     if verbose:
         log.debug("Agent name from BedrockAgentCoreApp: %s", agent_name)
         log.debug("Config path: %s", config_path)
+
+    existing_project_config = load_config_if_exists(config_path)
+
+    if existing_project_config and agent_name in existing_project_config.agents:
+        existing_agent = existing_project_config.agents[agent_name]
+        existing_network = existing_agent.aws.network_configuration
+
+        # Import validation helper
+        from .vpc_validation import check_network_immutability
+
+        # Check if network config is being changed
+        error = check_network_immutability(
+            existing_network_mode=existing_network.network_mode,
+            existing_subnets=existing_network.network_mode_config.subnets
+            if existing_network.network_mode_config
+            else None,
+            existing_security_groups=existing_network.network_mode_config.security_groups
+            if existing_network.network_mode_config
+            else None,
+            new_network_mode="VPC" if vpc_enabled else "PUBLIC",
+            new_subnets=vpc_subnets,
+            new_security_groups=vpc_security_groups,
+        )
+
+        if error:
+            raise ValueError(error)
 
     # Convert to POSIX for cross-platform compatibility
     entrypoint_path_str = entrypoint_path.as_posix()
@@ -388,6 +504,7 @@ def configure_bedrock_agentcore(
 
     # Create new configuration
     ecr_auto_create_value = bool(auto_create_ecr and not ecr_repository)
+    s3_auto_create_value = bool(auto_create_s3 and not s3_path and deployment_type == "direct_code_deploy")
 
     if verbose:
         log.debug("ECR auto-create: %s", ecr_auto_create_value)
@@ -397,7 +514,7 @@ def configure_bedrock_agentcore(
         log.debug("  Name: %s", agent_name)
         log.debug("  Entrypoint: %s", entrypoint)
         log.debug("  Platform: %s", ContainerRuntime.DEFAULT_PLATFORM)
-        log.debug("  Container runtime: %s", runtime.runtime)
+        log.debug("  Container runtime: %s", runtime.runtime if runtime else "N/A")
         log.debug("  Execution role: %s", execution_role_arn)
         ecr_repo_display = ecr_repository if ecr_repository else "Auto-create" if ecr_auto_create_value else "N/A"
         log.debug("  ECR repository: %s", ecr_repo_display)
@@ -408,8 +525,10 @@ def configure_bedrock_agentcore(
     config = BedrockAgentCoreAgentSchema(
         name=agent_name,
         entrypoint=entrypoint,
+        deployment_type=deployment_type,
+        runtime_type=runtime_type,
         platform=ContainerRuntime.DEFAULT_PLATFORM,
-        container_runtime=runtime.runtime,
+        container_runtime=runtime.runtime if runtime else None,
         source_path=str(Path(source_path).resolve()) if source_path else None,
         aws=AWSConfig(
             execution_role=execution_role_arn,
@@ -418,9 +537,12 @@ def configure_bedrock_agentcore(
             region=region,
             ecr_repository=ecr_repository,
             ecr_auto_create=ecr_auto_create_value,
-            network_configuration=NetworkConfiguration(network_mode="PUBLIC"),
+            s3_path=s3_path,
+            s3_auto_create=s3_auto_create_value,
+            network_configuration=network_config,
             protocol_configuration=ProtocolConfiguration(server_protocol=protocol or "HTTP"),
             observability=ObservabilityConfig(enabled=enable_observability),
+            lifecycle_configuration=lifecycle_config,
         ),
         bedrock_agentcore=BedrockAgentCoreDeploymentInfo(),
         codebuild=CodeBuildConfig(
@@ -438,16 +560,35 @@ def configure_bedrock_agentcore(
     if verbose:
         log.debug("Configuration saved with agent: %s", agent_name)
 
+    # Get VPC ID for display if VPC mode
+    vpc_id = None
+    if vpc_enabled and vpc_subnets:
+        try:
+            session = boto3.Session(region_name=region)
+            ec2_client = session.client("ec2", region_name=region)
+            subnet_response = ec2_client.describe_subnets(SubnetIds=[vpc_subnets[0]])
+            if subnet_response["Subnets"]:
+                vpc_id = subnet_response["Subnets"][0]["VpcId"]
+        except Exception:
+            pass  # nosec B110
+
     return ConfigureResult(
         config_path=config_path,
         dockerfile_path=dockerfile_path,
-        dockerignore_path=dockerignore_path if dockerignore_path.exists() else None,
-        runtime=runtime.get_name(),
+        dockerignore_path=dockerignore_path if dockerignore_path and dockerignore_path.exists() else None,
+        runtime=runtime.get_name() if runtime else None,
+        runtime_type=runtime_type,
         region=region,
         account_id=account_id,
         execution_role=execution_role_arn,
         ecr_repository=ecr_repository,
         auto_create_ecr=auto_create_ecr and not ecr_repository,
+        network_mode="VPC" if vpc_enabled else "PUBLIC",
+        network_subnets=vpc_subnets if vpc_enabled else None,
+        network_security_groups=vpc_security_groups if vpc_enabled else None,
+        network_vpc_id=vpc_id,
+        s3_path=s3_path,
+        auto_create_s3=s3_auto_create_value,
     )
 
 
