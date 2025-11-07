@@ -1862,6 +1862,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#cdk-vs-cloudformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      CDK vs CloudFormation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#option-1-quick-deploy-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       Option 1: Quick Deploy (Recommended)
@@ -1978,6 +1987,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cost-estimate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost Estimate
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cost Estimate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#monthly-cost-breakdown-us-east-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Monthly Cost Breakdown (us-east-1)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-optimization-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost Optimization Tips
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       Troubleshooting
@@ -2023,8 +2065,35 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#runtime-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime Issues
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributing" class="md-nav__link">
+    <span class="md-ellipsis">
+      🤝 Contributing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      📄 License
+    </span>
+  </a>
   
 </li>
       
@@ -2060,7 +2129,10 @@
 <li><a href="#testing">Testing</a></li>
 <li><a href="#sample-queries">Sample Queries</a></li>
 <li><a href="#cleanup">Cleanup</a></li>
+<li><a href="#cost-estimate">Cost Estimate</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#-contributing">🤝 Contributing</a></li>
+<li><a href="#-license">📄 License</a></li>
 </ul>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>This CDK stack creates a minimal AgentCore deployment that includes:</p>
@@ -2070,7 +2142,6 @@
 <li><strong>IAM Roles</strong>: Provides necessary permissions</li>
 <li><strong>CodeBuild Project</strong>: Automatically builds the ARM64 Docker image</li>
 <li><strong>Lambda Functions</strong>: Custom resources for automation</li>
-<li><strong>S3 Assets</strong>: Source code packaging and deployment</li>
 </ul>
 <p>This makes it ideal for:
 - Learning AgentCore basics
@@ -2078,6 +2149,7 @@
 - Understanding the core deployment pattern
 - Building a foundation before adding complexity</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p><img alt="Basic AgentCore Runtime Architecture" src="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/cdk/basic-runtime/architecture.png" /></p>
 <p>The architecture consists of:</p>
 <ul>
 <li><strong>User</strong>: Sends questions to the agent and receives responses</li>
@@ -2089,7 +2161,6 @@
 <li><strong>IAM Roles</strong>: </li>
 <li>IAM role for CodeBuild (builds and pushes images)</li>
 <li>IAM role for Agent Execution (runtime permissions)</li>
-<li><strong>Amazon Bedrock LLMs</strong>: Provides the AI model capabilities for the agent</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <h3 id="aws-account-setup">AWS Account Setup<a class="headerlink" href="#aws-account-setup" title="Permanent link">&para;</a></h3>
@@ -2118,7 +2189,7 @@ cdk<span class="w"> </span>--version
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>CDK version 2.218.0 or later</strong> (for BedrockAgentCore support)</p>
+<p><strong>CDK version 2.220.0 or later</strong> (for BedrockAgentCore support)</p>
 </li>
 <li>
 <p><strong>Bedrock Model Access</strong>: Enable access to Amazon Bedrock models in your AWS region</p>
@@ -2135,9 +2206,10 @@ cdk<span class="w"> </span>--version
 <li>Lambda function creation</li>
 <li>CodeBuild project creation</li>
 <li>BedrockAgentCore resource creation</li>
-<li>S3 bucket operations (for CDK assets)</li>
 </ol>
 <h2 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h2>
+<h3 id="cdk-vs-cloudformation">CDK vs CloudFormation<a class="headerlink" href="#cdk-vs-cloudformation" title="Permanent link">&para;</a></h3>
+<p>This is the <strong>CDK version</strong> of the basic AgentCore runtime. If you prefer CloudFormation, see the <a href="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/cloudformation/basic-runtime/">CloudFormation version</a>.</p>
 <h3 id="option-1-quick-deploy-recommended">Option 1: Quick Deploy (Recommended)<a class="headerlink" href="#option-1-quick-deploy-recommended" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Install dependencies</span>
 pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
@@ -2156,21 +2228,25 @@ python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </
 <span class="c1"># 2. Install Python dependencies</span>
 pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 
-<span class="c1"># 2. Bootstrap CDK in your account/region (first time only)</span>
+<span class="c1"># 3. Bootstrap CDK in your account/region (first time only)</span>
 cdk<span class="w"> </span>bootstrap
 
-<span class="c1"># 3. Synthesize the CloudFormation template (optional)</span>
+<span class="c1"># 4. Synthesize the CloudFormation template (optional)</span>
 cdk<span class="w"> </span>synth
 
-<span class="c1"># 4. Deploy the stack</span>
+<span class="c1"># 5. Deploy the stack</span>
 cdk<span class="w"> </span>deploy<span class="w"> </span>--require-approval<span class="w"> </span>never
 
-<span class="c1"># 5. Get outputs</span>
+<span class="c1"># 6. Get outputs</span>
 cdk<span class="w"> </span>list
 </code></pre></div>
 <h3 id="deployment-time">Deployment Time<a class="headerlink" href="#deployment-time" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Expected Duration</strong>: 3-5 minutes</li>
+<li><strong>Expected Duration</strong>: 8-12 minutes</li>
+<li><strong>Main Steps</strong>:</li>
+<li>Stack creation: ~2 minutes</li>
+<li>Docker image build (CodeBuild): ~5-8 minutes</li>
+<li>Runtime provisioning: ~1-2 minutes</li>
 </ul>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <h3 id="using-aws-cli">Using AWS CLI<a class="headerlink" href="#using-aws-cli" title="Permanent link">&para;</a></h3>
@@ -2185,7 +2261,7 @@ cdk<span class="w"> </span>list
 aws<span class="w"> </span>bedrock-agentcore<span class="w"> </span>invoke-agent-runtime<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--agent-runtime-arn<span class="w"> </span><span class="nv">$RUNTIME_ARN</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--qualifier<span class="w"> </span>DEFAULT<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--payload<span class="w"> </span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;What is 2+2?&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--payload<span class="w"> </span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;Hello, how are you?&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>response.json
 
 <span class="c1"># View the response</span>
@@ -2200,7 +2276,7 @@ cat<span class="w"> </span>response.json
 <li>Click "Test" button</li>
 <li>Enter test payload:
    <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Hello, how are you?&quot;</span>
 <span class="p">}</span>
 </code></pre></div></li>
 <li>Click "Invoke"</li>
@@ -2209,28 +2285,23 @@ cat<span class="w"> </span>response.json
 <p>Try these queries to test your basic agent:</p>
 <ol>
 <li>
-<p><strong>Simple Math</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">}</span>
+<p><strong>Simple Greeting</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Hello, how are you?&quot;</span><span class="p">}</span>
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>General Knowledge</strong>:
+<p><strong>Question Answering</strong>:
    <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is the capital of France?&quot;</span><span class="p">}</span>
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Explanation Request</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain what Amazon Bedrock is in simple terms&quot;</span><span class="p">}</span>
+<p><strong>Creative Writing</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Write a short poem about clouds&quot;</span><span class="p">}</span>
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Creative Task</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Write a haiku about cloud computing&quot;</span><span class="p">}</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Reasoning</strong>:
-   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;If I have 5 apples and give away 2, how many do I have left?&quot;</span><span class="p">}</span>
+<p><strong>Problem Solving</strong>:
+   <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How do I bake a chocolate cake?&quot;</span><span class="p">}</span>
 </code></pre></div></p>
 </li>
 </ol>
@@ -2255,6 +2326,57 @@ aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb
 <li>Click "Delete"</li>
 <li>Confirm deletion</li>
 </ol>
+<h2 id="cost-estimate">Cost Estimate<a class="headerlink" href="#cost-estimate" title="Permanent link">&para;</a></h2>
+<h3 id="monthly-cost-breakdown-us-east-1">Monthly Cost Breakdown (us-east-1)<a class="headerlink" href="#monthly-cost-breakdown-us-east-1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Usage</th>
+<th>Monthly Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AgentCore Runtime</strong></td>
+<td>1 runtime, minimal usage</td>
+<td>~$5-10</td>
+</tr>
+<tr>
+<td><strong>ECR Repository</strong></td>
+<td>1 repository, &lt;1GB storage</td>
+<td>~$0.10</td>
+</tr>
+<tr>
+<td><strong>CodeBuild</strong></td>
+<td>Occasional builds</td>
+<td>~$1-2</td>
+</tr>
+<tr>
+<td><strong>Lambda</strong></td>
+<td>Custom resource executions</td>
+<td>~$0.01</td>
+</tr>
+<tr>
+<td><strong>CloudWatch Logs</strong></td>
+<td>Agent logs</td>
+<td>~$0.50</td>
+</tr>
+<tr>
+<td><strong>Bedrock Model Usage</strong></td>
+<td>Pay per token</td>
+<td>Variable*</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Estimated Total: ~$7-13/month</strong> (excluding Bedrock model usage)</p>
+<p>*Bedrock costs depend on your usage patterns and chosen models. See <a href="https://aws.amazon.com/bedrock/pricing/">Bedrock Pricing</a> for details.</p>
+<h3 id="cost-optimization-tips">Cost Optimization Tips<a class="headerlink" href="#cost-optimization-tips" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Delete when not in use</strong>: Use <code>cdk destroy</code> to remove all resources</li>
+<li><strong>Monitor usage</strong>: Set up CloudWatch billing alarms</li>
+<li><strong>Choose efficient models</strong>: Select appropriate Bedrock models for your use case</li>
+</ul>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="cdk-bootstrap-required">CDK Bootstrap Required<a class="headerlink" href="#cdk-bootstrap-required" title="Permanent link">&para;</a></h3>
 <p>If you see bootstrap errors:
@@ -2274,6 +2396,15 @@ aws<span class="w"> </span>cloudformation<span class="w"> </span><span class="nb
 1. Go to CodeBuild console
 2. Find the build project (name contains "basic-agent-build")
 3. Check build history and logs</p>
+<h3 id="runtime-issues">Runtime Issues<a class="headerlink" href="#runtime-issues" title="Permanent link">&para;</a></h3>
+<p>If the runtime fails to start:
+1. Check CloudWatch logs for the runtime
+2. Verify the Docker image was built successfully
+3. Ensure IAM permissions are correct</p>
+<h2 id="contributing">🤝 Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h2>
+<p>We welcome contributions! Please see our <a href="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/CONTRIBUTING.md">Contributing Guide</a> for details.</p>
+<h2 id="license">📄 License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
+<p>This project is licensed under the MIT License - see the <a href="../../../../../https:/raw.githubusercontent.com/awslabs/amazon-bedrock-agentcore-samples/refs/heads/main/04-infrastructure-as-code/LICENSE">LICENSE</a> file for details.</p>
 
 
 
