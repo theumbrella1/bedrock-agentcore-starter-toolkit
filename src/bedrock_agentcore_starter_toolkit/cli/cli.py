@@ -2,8 +2,12 @@
 
 import typer
 
-from ..cli.gateway.commands import create_mcp_gateway, create_mcp_gateway_target, gateway_app
 from ..cli.memory.commands import memory_app
+from ..cli.gateway.commands import (
+    create_mcp_gateway,
+    create_mcp_gateway_target,
+    gateway_app,
+)
 from ..utils.logging_config import setup_toolkit_logging
 from .import_agent.commands import import_agent
 from .runtime.commands import (
