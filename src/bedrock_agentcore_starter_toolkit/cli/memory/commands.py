@@ -136,17 +136,16 @@ def list(
 
         table = Table(title=f"Memory Resources ({len(memories)})")
         table.add_column("ID", style="cyan")
-        table.add_column("Name", style="green")
-        table.add_column("Status", style="yellow")
-        table.add_column("Strategies", style="magenta")
+        table.add_column("Status", style="green")
+        table.add_column("Created At", style="blue")
+        table.add_column("Updated At", style="magenta")
 
         for memory in memories:
-            strategy_count = len(memory.strategies) if memory.strategies else 0
             table.add_row(
-                memory.id or "N/A",
-                memory.name or "N/A",
-                memory.status or "N/A",
-                str(strategy_count),
+                memory.get("id", "N/A"),
+                memory.get("status", "N/A"),
+                str(memory.get("createdAt", "N/A")),
+                str(memory.get("updatedAt", "N/A")),
             )
 
         console.print(table)
