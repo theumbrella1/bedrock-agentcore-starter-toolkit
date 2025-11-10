@@ -27,22 +27,19 @@ def test_manager_initialization():
 
         manager = MemoryManager(region_name="us-west-2")
 
-        # Check that the region was set correctly and session.client was called twice (control + data plane)
+        # Check that the region was set correctly and session.client was called once
         assert manager.region_name == "us-west-2"
-        assert mock_session.client.call_count == 2
+        assert mock_session.client.call_count == 1
 
-        # Verify both services were called with config
-        call_args_list = mock_session.client.call_args_list
-        services_called = [call[0][0] for call in call_args_list]
-        assert "bedrock-agentcore-control" in services_called
-        assert "bedrock-agentcore" in services_called
+        # Verify the correct service was called with config
+        mock_session.client.assert_called_once()
+        call_args = mock_session.client.call_args
+        assert call_args[0][0] == "bedrock-agentcore-control"
+        assert call_args[1]["region_name"] == "us-west-2"
 
-        # Verify all calls used the correct region
-        for call_args in call_args_list:
-            assert call_args[1]["region_name"] == "us-west-2"
-            # Verify default config includes user agent
-            config = call_args[1]["config"]
-            assert config.user_agent_extra == "bedrock-agentcore-starter-toolkit"
+        # Verify default config includes user agent
+        config = call_args[1]["config"]
+        assert config.user_agent_extra == "bedrock-agentcore-starter-toolkit"
 
 
 def test_manager_initialization_with_boto_client_config():
@@ -66,23 +63,20 @@ def test_manager_initialization_with_boto_client_config():
 
         # Check that the region was set correctly
         assert manager.region_name == "us-east-1"
-        assert mock_session.client.call_count == 2
+        assert mock_session.client.call_count == 1
 
-        # Verify both services were called with merged config
-        call_args_list = mock_session.client.call_args_list
-        services_called = [call[0][0] for call in call_args_list]
-        assert "bedrock-agentcore-control" in services_called
-        assert "bedrock-agentcore" in services_called
+        # Verify the correct service was called with merged config
+        mock_session.client.assert_called_once()
+        call_args = mock_session.client.call_args
+        assert call_args[0][0] == "bedrock-agentcore-control"
+        assert call_args[1]["region_name"] == "us-east-1"
 
-        # Verify all calls used the correct region and config
-        for call_args in call_args_list:
-            assert call_args[1]["region_name"] == "us-east-1"
-            # Verify config was merged and includes user agent
-            config = call_args[1]["config"]
-            assert config.user_agent_extra == "bedrock-agentcore-starter-toolkit"
-            # The merged config should contain the original settings
-            assert hasattr(config, "retries")
-            assert hasattr(config, "read_timeout")
+        # Verify config was merged and includes user agent
+        config = call_args[1]["config"]
+        assert config.user_agent_extra == "bedrock-agentcore-starter-toolkit"
+        # The merged config should contain the original settings
+        assert hasattr(config, "retries")
+        assert hasattr(config, "read_timeout")
 
 
 def test_boto_client_config_user_agent_merging():
@@ -153,21 +147,15 @@ def test_boto_client_config_with_session_and_region():
 
         MemoryManager(region_name="us-west-2", boto3_session=mock_session, boto_client_config=custom_config)
 
-        # Verify the client was created with the session and merged config (2 calls for control + data plane)
-        assert mock_session.client.call_count == 2
-        call_args_list = mock_session.client.call_args_list
-        
-        # Verify both services were called
-        services_called = [call[0][0] for call in call_args_list]
-        assert "bedrock-agentcore-control" in services_called
-        assert "bedrock-agentcore" in services_called
+        # Verify the client was created with the session and merged config
+        assert mock_session.client.call_count == 1
+        call_args = mock_session.client.call_args
+        assert call_args[0][0] == "bedrock-agentcore-control"
+        assert call_args[1]["region_name"] == "us-west-2"
 
-        # Verify all calls used correct region and config
-        for call_args in call_args_list:
-            assert call_args[1]["region_name"] == "us-west-2"
-            # Verify config was merged properly
-            config = call_args[1]["config"]
-            assert config.user_agent_extra == "test-agent bedrock-agentcore-starter-toolkit"
+        # Verify config was merged properly
+        config = call_args[1]["config"]
+        assert config.user_agent_extra == "test-agent bedrock-agentcore-starter-toolkit"
 
 
 def test_boto_client_config_none_handling():
@@ -2985,257 +2973,6 @@ def test_get_or_create_memory_no_strategy_validation_when_none_provided():
         # Should not raise any validation error
 
 
-# Data Plane Operations Tests
-
-
-def test_create_memory_event():
-    """Test create_memory_event functionality."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_data_plane_client.create_event.return_value = {"eventId": "event-123"}
-
-        # Test create_memory_event with single event
-        event_payload = {"conversational": {"content": {"text": "Hello!"}, "role": "USER"}}
-        result = manager.create_memory_event(
-            memory_id="mem-123", actor_id="user-456", event_payload=event_payload, session_id="session-789"
-        )
-
-        assert result["eventId"] == "event-123"
-        assert mock_data_plane_client.create_event.called
-
-        # Verify API call parameters
-        args, kwargs = mock_data_plane_client.create_event.call_args
-        assert kwargs["memoryId"] == "mem-123"
-        assert kwargs["actorId"] == "user-456"
-        assert kwargs["sessionId"] == "session-789"
-        assert "eventTimestamp" in kwargs
-        assert len(kwargs["payload"]) == 1
-
-
-def test_create_memory_event_multiple_payloads():
-    """Test create_memory_event with multiple event payloads."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_data_plane_client.create_event.return_value = {"eventId": "event-456"}
-
-        # Test with list of events
-        event_payloads = [
-            {"conversational": {"content": {"text": "Hello!"}, "role": "USER"}},
-            {"conversational": {"content": {"text": "Hi there!"}, "role": "ASSISTANT"}},
-        ]
-        result = manager.create_memory_event(
-            memory_id="mem-123", actor_id="user-456", event_payload=event_payloads
-        )
-
-        assert result["eventId"] == "event-456"
-
-        # Verify payload was normalized
-        args, kwargs = mock_data_plane_client.create_event.call_args
-        assert len(kwargs["payload"]) == 2
-
-
-def test_create_memory_event_content_normalization():
-    """Test create_memory_event normalizes content strings to dict format."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_data_plane_client.create_event.return_value = {"eventId": "event-789"}
-
-        # Test with string content (should be normalized to dict)
-        event_payload = {"conversational": {"content": "Hello!", "role": "user"}}
-        manager.create_memory_event(memory_id="mem-123", actor_id="user-456", event_payload=event_payload)
-
-        # Verify content was normalized and role was uppercased
-        args, kwargs = mock_data_plane_client.create_event.call_args
-        payload = kwargs["payload"][0]
-        assert payload["conversational"]["content"] == {"text": "Hello!"}
-        assert payload["conversational"]["role"] == "USER"
-
-
-def test_retrieve_memories():
-    """Test retrieve_memories functionality."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_records = [
-            {"memoryRecordId": "rec-1", "content": "User likes pizza", "score": 0.95},
-            {"memoryRecordId": "rec-2", "content": "User prefers Italian food", "score": 0.87},
-        ]
-        mock_data_plane_client.retrieve_memory_records.return_value = {"memoryRecordSummaries": mock_records}
-
-        # Test retrieve_memories
-        records = manager.retrieve_memories(
-            memory_id="mem-123", namespace="/users/user-456/facts", search_query="What does the user like?", top_k=5
-        )
-
-        assert len(records) == 2
-        assert records[0]["memoryRecordId"] == "rec-1"
-        assert records[1]["score"] == 0.87
-
-        # Verify API call
-        args, kwargs = mock_data_plane_client.retrieve_memory_records.call_args
-        assert kwargs["memoryId"] == "mem-123"
-        assert kwargs["namespace"] == "/users/user-456/facts"
-        assert kwargs["searchCriteria"]["searchQuery"] == "What does the user like?"
-        assert kwargs["searchCriteria"]["topK"] == 5
-
-
-def test_list_memory_actors():
-    """Test list_memory_actors functionality."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_actors = [
-            {"actorId": "user-1", "lastActivityTimestamp": "2024-01-01T00:00:00Z"},
-            {"actorId": "user-2", "lastActivityTimestamp": "2024-01-02T00:00:00Z"},
-        ]
-        mock_data_plane_client.list_actors.return_value = {"actorSummaries": mock_actors}
-
-        # Test list_memory_actors
-        actors = manager.list_memory_actors(memory_id="mem-123", max_results=50)
-
-        assert len(actors) == 2
-        assert actors[0]["actorId"] == "user-1"
-        assert actors[1]["actorId"] == "user-2"
-
-        # Verify API call
-        args, kwargs = mock_data_plane_client.list_actors.call_args
-        assert kwargs["memoryId"] == "mem-123"
-        assert kwargs["maxResults"] == 50
-
-
-def test_list_memory_sessions():
-    """Test list_memory_sessions functionality."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        # Mock response
-        mock_sessions = [
-            {"sessionId": "session-1", "lastActivityTimestamp": "2024-01-01T00:00:00Z"},
-            {"sessionId": "session-2", "lastActivityTimestamp": "2024-01-02T00:00:00Z"},
-        ]
-        mock_data_plane_client.list_sessions.return_value = {"sessionSummaries": mock_sessions}
-
-        # Test list_memory_sessions
-        sessions = manager.list_memory_sessions(memory_id="mem-123", actor_id="user-456", max_results=100)
-
-        assert len(sessions) == 2
-        assert sessions[0]["sessionId"] == "session-1"
-        assert sessions[1]["sessionId"] == "session-2"
-
-        # Verify API call
-        args, kwargs = mock_data_plane_client.list_sessions.call_args
-        assert kwargs["memoryId"] == "mem-123"
-        assert kwargs["actorId"] == "user-456"
-        assert kwargs["maxResults"] == 100
-
-
-def test_data_plane_client_error_handling():
-    """Test error handling for data plane operations."""
-    with patch("boto3.client"):
-        manager = MemoryManager(region_name="us-east-1")
-
-        # Mock the data plane client to raise an error
-        mock_data_plane_client = MagicMock()
-        manager._data_plane_client = mock_data_plane_client
-
-        error_response = {"Error": {"Code": "ValidationException", "Message": "Invalid parameter"}}
-        mock_data_plane_client.create_event.side_effect = ClientError(error_response, "CreateEvent")
-
-        try:
-            manager.create_memory_event(
-                memory_id="mem-123",
-                actor_id="user-456",
-                event_payload={"conversational": {"content": {"text": "Test"}, "role": "USER"}},
-            )
-            raise AssertionError("Error was not raised as expected")
-        except ClientError as e:
-            assert "ValidationException" in str(e)
-
-
-def test_manager_initialization_with_data_plane_client():
-    """Test that manager initializes both control and data plane clients."""
-    with patch("boto3.Session") as mock_session_class:
-        # Setup the mock session
-        mock_session = MagicMock()
-        mock_session.region_name = "us-west-2"
-        mock_session_class.return_value = mock_session
-
-        # Setup the mock client
-        mock_client_instance = MagicMock()
-        mock_session.client.return_value = mock_client_instance
-
-        manager = MemoryManager(region_name="us-west-2")
-
-        # Check that both clients were created
-        assert mock_session.client.call_count == 2
-
-        # Verify both services were called
-        call_args_list = mock_session.client.call_args_list
-        services_called = [call[0][0] for call in call_args_list]
-        assert "bedrock-agentcore-control" in services_called
-        assert "bedrock-agentcore" in services_called
-
-
-def test_manager_getattr_data_plane_methods():
-    """Test that __getattr__ forwards data plane methods correctly."""
-    with patch("boto3.Session") as mock_session_class:
-        # Setup the mock session
-        mock_session = MagicMock()
-        mock_session.region_name = "us-west-2"
-        mock_session_class.return_value = mock_session
-
-        # Setup the mock clients
-        mock_control_client = MagicMock()
-        mock_data_client = MagicMock()
-
-        def client_side_effect(service_name, **kwargs):
-            if service_name == "bedrock-agentcore-control":
-                return mock_control_client
-            elif service_name == "bedrock-agentcore":
-                return mock_data_client
-            return MagicMock()
-
-        mock_session.client.side_effect = client_side_effect
-
-        manager = MemoryManager(region_name="us-west-2")
-
-        # Test that data plane methods are accessible
-        assert hasattr(mock_data_client, "create_event")
-        assert hasattr(mock_data_client, "retrieve_memory_records")
-        assert hasattr(mock_data_client, "list_actors")
-        assert hasattr(mock_data_client, "list_sessions")
 
 
 def test_region_fallback_to_session():
@@ -3256,7 +2993,6 @@ def test_region_fallback_to_session():
         # Verify region was set from session
         assert manager.region_name == "eu-west-1"
 
-        # Verify clients were created with session region
-        call_args_list = mock_session.client.call_args_list
-        for call_args in call_args_list:
-            assert call_args[1]["region_name"] == "eu-west-1"
+        # Verify client was created with session region
+        call_args = mock_session.client.call_args
+        assert call_args[1]["region_name"] == "eu-west-1"

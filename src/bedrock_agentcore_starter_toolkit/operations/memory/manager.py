@@ -78,9 +78,6 @@ class MemoryManager:
         self._control_plane_client = session.client(
             "bedrock-agentcore-control", region_name=self.region_name, config=client_config
         )
-        self._data_plane_client = session.client(
-            "bedrock-agentcore", region_name=self.region_name, config=client_config
-        )
 
         # AgentCore Memory control plane methods
         self._ALLOWED_CONTROL_PLANE_METHODS = {
@@ -89,32 +86,22 @@ class MemoryManager:
             "update_memory",
             "delete_memory",
         }
-        
-        # AgentCore Memory data plane methods
-        self._ALLOWED_DATA_PLANE_METHODS = {
-            "create_event",
-            "retrieve_memory_records",
-            "list_actors",
-            "list_sessions",
-        }
         logger.info("✅ MemoryManager initialized for region: %s", self.region_name)
 
     def __getattr__(self, name: str):
         """Dynamically forward method calls to the appropriate boto3 client.
 
-        This method enables access to all control_plane and data_plane boto3 client methods without explicitly
-        defining them. Methods are looked up in the following order:
-        _control_plane_client (bedrock-agentcore-control) - for control plane operations
-        _data_plane_client (bedrock-agentcore) - for data plane operations
+        This method enables access to all control_plane boto3 client methods without explicitly
+        defining them.
 
         Args:
             name: The method name being accessed
 
         Returns:
-            A callable method from the control_plane or data_plane boto3 client
+            A callable method from the control_plane boto3 client
 
         Raises:
-            AttributeError: If the method doesn't exist on either client
+            AttributeError: If the method doesn't exist on control_plane_client
 
         Example:
             # Access any boto3 method directly
@@ -123,24 +110,18 @@ class MemoryManager:
             # These calls are forwarded to the appropriate boto3 functions
             response = manager.list_memories()
             memory = manager.get_memory(memoryId="mem-123")
-            event = manager.create_event(memoryId="mem-123", actorId="user-1", ...)
         """
         if name in self._ALLOWED_CONTROL_PLANE_METHODS and hasattr(self._control_plane_client, name):
             method = getattr(self._control_plane_client, name)
             logger.debug("Forwarding method '%s' to control_plane_client", name)
             return method
-        
-        if name in self._ALLOWED_DATA_PLANE_METHODS and hasattr(self._data_plane_client, name):
-            method = getattr(self._data_plane_client, name)
-            logger.debug("Forwarding method '%s' to data_plane_client", name)
-            return method
 
-        # Method not found on either client
+        # Method not found on client
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'. "
-            f"Method not found on control_plane_client or data_plane_client. "
+            f"Method not found on control_plane_client. "
             f"Available methods can be found in the boto3 documentation for "
-            f"'bedrock-agentcore-control' and 'bedrock-agentcore' services."
+            f"'bedrock-agentcore-control' service."
         )
 
     def _validate_namespace(self, namespace: str) -> bool:
@@ -1086,201 +1067,4 @@ class MemoryManager:
         for namespace in namespaces:
             self._validate_namespace(namespace)
 
-    # Data Plane Operations
 
-    def create_memory_event(
-        self,
-        memory_id: str,
-        actor_id: str,
-        event_payload: Union[Dict[str, Any], List[Dict[str, Any]]],
-        session_id: Optional[str] = None,
-        event_timestamp: Optional[Any] = None,
-    ) -> Dict[str, Any]:
-        """Create a memory event for conversation tracking.
-
-        Maps to: bedrock-agentcore.create_event.
-
-        Args:
-            memory_id: Memory resource ID
-            actor_id: Actor ID (e.g., user ID)
-            event_payload: Event payload - can be a single dict or list of dicts
-            session_id: Optional session ID
-            event_timestamp: Optional event timestamp (defaults to current time)
-
-        Returns:
-            Response containing eventId
-
-        Example:
-            # Single conversational event
-            manager.create_memory_event(
-                memory_id="mem_123",
-                actor_id="user_456",
-                event_payload={"conversational": {"content": {"text": "Hello!"}, "role": "USER"}}
-            )
-
-            # Multiple events
-            manager.create_memory_event(
-                memory_id="mem_123",
-                actor_id="user_456",
-                event_payload=[
-                    {"conversational": {"content": {"text": "Hello!"}, "role": "USER"}},
-                    {"conversational": {"content": {"text": "Hi there!"}, "role": "ASSISTANT"}}
-                ]
-            )
-        """
-        from datetime import datetime
-
-        try:
-            # Normalize event_payload format
-            if isinstance(event_payload, list):
-                payload = event_payload
-            else:
-                payload = [event_payload]
-
-            # Ensure conversational payloads have correct structure
-            normalized_payload = []
-            for item in payload:
-                if item and isinstance(item, dict) and "conversational" in item:
-                    conv = item["conversational"]
-                    if isinstance(conv, dict):
-                        # Ensure content is a dict with 'text' key if it's a string
-                        if isinstance(conv.get("content"), str):
-                            conv["content"] = {"text": conv["content"]}
-                        # Ensure role is uppercase
-                        if "role" in conv:
-                            conv["role"] = conv["role"].upper()
-                normalized_payload.append(item)
-
-            params = {
-                "memoryId": memory_id,
-                "actorId": actor_id,
-                "eventTimestamp": event_timestamp
-                or (datetime.now(datetime.UTC) if hasattr(datetime, "UTC") else datetime.utcnow()),
-                "payload": normalized_payload,
-            }
-
-            if session_id:
-                params["sessionId"] = session_id
-
-            response = self._data_plane_client.create_event(**params)
-            logger.info("Created event: %s for memory: %s", response.get("eventId"), memory_id)
-            return response
-
-        except ClientError as e:
-            logger.error("Failed to create event: %s", e)
-            raise
-
-    def retrieve_memories(
-        self,
-        memory_id: str,
-        namespace: str,
-        search_query: str,
-        top_k: int = 5,
-    ) -> List[Dict[str, Any]]:
-        """Retrieve memories using semantic search.
-
-        Maps to: bedrock-agentcore.retrieve_memory_records.
-
-        Args:
-            memory_id: Memory resource ID
-            namespace: Namespace to search in
-            search_query: Search query text
-            top_k: Number of results to return (default: 5)
-
-        Returns:
-            List of memory record summaries
-
-        Example:
-            records = manager.retrieve_memories(
-                memory_id="mem_123",
-                namespace="/users/user_456/facts",
-                search_query="What are the user's preferences?",
-                top_k=5
-            )
-        """
-        try:
-            params = {
-                "memoryId": memory_id,
-                "namespace": namespace,
-                "searchCriteria": {"searchQuery": search_query, "topK": top_k},
-            }
-
-            response = self._data_plane_client.retrieve_memory_records(**params)
-            records = response.get("memoryRecordSummaries", [])
-            logger.info("Retrieved %d memory records from namespace: %s", len(records), namespace)
-            return records
-
-        except ClientError as e:
-            logger.error("Failed to retrieve memories: %s", e)
-            raise
-
-    def list_memory_actors(
-        self,
-        memory_id: str,
-        max_results: int = 100,
-    ) -> List[Dict[str, Any]]:
-        """List actors in a memory.
-
-        Maps to: bedrock-agentcore.list_actors.
-
-        Args:
-            memory_id: Memory resource ID
-            max_results: Maximum number of results (default: 100)
-
-        Returns:
-            List of actor summaries
-
-        Example:
-            actors = manager.list_memory_actors(memory_id="mem_123")
-        """
-        try:
-            params = {"memoryId": memory_id, "maxResults": min(max_results, 100)}
-
-            response = self._data_plane_client.list_actors(**params)
-            actors = response.get("actorSummaries", [])
-            logger.info("Found %d actors in memory: %s", len(actors), memory_id)
-            return actors
-
-        except ClientError as e:
-            logger.error("Failed to list actors: %s", e)
-            raise
-
-    def list_memory_sessions(
-        self,
-        memory_id: str,
-        actor_id: str,
-        max_results: int = 100,
-    ) -> List[Dict[str, Any]]:
-        """List sessions for an actor in a memory.
-
-        Maps to: bedrock-agentcore.list_sessions.
-
-        Args:
-            memory_id: Memory resource ID
-            actor_id: Actor ID
-            max_results: Maximum number of results (default: 100)
-
-        Returns:
-            List of session summaries
-
-        Example:
-            sessions = manager.list_memory_sessions(
-                memory_id="mem-123",
-                actor_id="user-456"
-            )
-        """
-        try:
-            params = {
-                "memoryId": memory_id,
-                "actorId": actor_id,
-                "maxResults": min(max_results, 100),
-            }
-
-            response = self._data_plane_client.list_sessions(**params)
-            sessions = response.get("sessionSummaries", [])
-            logger.info("Found %d sessions for actor %s in memory: %s", len(sessions), actor_id, memory_id)
-            return sessions
-
-        except ClientError as e:
-            logger.error("Failed to list sessions: %s", e)
-            raise
