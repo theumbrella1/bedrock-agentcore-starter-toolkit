@@ -243,12 +243,14 @@ class GatewayClient:
         gateway_identifier: Optional[str] = None,
         name: Optional[str] = None,
         gateway_arn: Optional[str] = None,
+        skip_resource_in_use: bool = False,
     ) -> dict:
         """Delete a gateway resource.
 
         :param gateway_identifier: Gateway ID to delete
         :param name: Gateway name to delete (will look up ID)
         :param gateway_arn: Gateway ARN to delete (will extract ID)
+        :param skip_resource_in_use: If True, delete all targets before deleting the gateway (default: False)
         :return: Result dict with status and details
         """
         resolved_id: Optional[str] = None
@@ -273,8 +275,34 @@ class GatewayClient:
             targets_resp = self.client.list_gateway_targets(gatewayIdentifier=resolved_id)
             targets = targets_resp.get("items", [])
             if targets:
-                self.logger.error("Gateway has %s target(s). Delete them first.", len(targets))
-                return {"status": "error", "message": f"Gateway has {len(targets)} target(s). Delete them first."}
+                if skip_resource_in_use:
+                    # Delete all targets first
+                    self.logger.info("Gateway has %s target(s). Deleting them first...", len(targets))
+                    deleted_targets = []
+                    for target in targets:
+                        target_id = target.get("targetId")
+                        try:
+                            self.client.delete_gateway_target(
+                                gatewayIdentifier=resolved_id,
+                                targetId=target_id
+                            )
+                            self.logger.info("  ✓ Deleted target: %s", target_id)
+                            deleted_targets.append(target_id)
+                            time.sleep(2)  # Brief wait between deletions
+                        except Exception as e:
+                            self.logger.error("  Error deleting target %s: %s", target_id, str(e))
+                            return {
+                                "status": "error",
+                                "message": f"Error deleting target {target_id}: {str(e)}",
+                                "deletedTargets": deleted_targets
+                            }
+                    
+                    # Wait for all targets to be deleted
+                    self.logger.info("  Waiting for targets to be fully deleted...")
+                    time.sleep(5)
+                else:
+                    self.logger.error("Gateway has %s target(s). Delete them first.", len(targets))
+                    return {"status": "error", "message": f"Gateway has {len(targets)} target(s). Delete them first."}
         except Exception as e:
             self.logger.error("Error checking gateway targets: %s", str(e))
             return {"status": "error", "message": f"Error checking gateway targets: {str(e)}"}

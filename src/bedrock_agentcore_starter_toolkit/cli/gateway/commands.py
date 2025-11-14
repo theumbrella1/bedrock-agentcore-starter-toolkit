@@ -90,16 +90,18 @@ def delete(
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID to delete"),
     name: Optional[str] = typer.Option(None, help="Gateway name to delete"),
     gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN to delete"),
+    force: bool = typer.Option(False, "--force", help="Delete all targets before deleting the gateway"),
 ) -> None:
     """Deletes an MCP Gateway.
 
-    The gateway must have zero targets before deletion.
+    The gateway must have zero targets before deletion, unless --force is used.
     You can specify the gateway by ID, ARN, or name.
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID to delete.
     :param name: optional - the gateway name to delete.
     :param gateway_arn: optional - the gateway ARN to delete.
+    :param force: optional - if True, delete all targets before deleting the gateway.
     :return:
     """
     client = GatewayClient(region_name=region)
@@ -107,7 +109,13 @@ def delete(
         gateway_identifier=gateway_identifier,
         name=name,
         gateway_arn=gateway_arn,
+        skip_resource_in_use=force,
     )
+    
+    # Enhance error message to suggest --force flag
+    if result.get("status") == "error" and "target(s)" in result.get("message", ""):
+        result["message"] = f"{result['message']} Use --force to delete the gateway and all its targets."
+    
     console.print(result)
 
 
