@@ -438,8 +438,8 @@ class TestGatewayClient:
             assert result["status"] == "error"
             assert "not found" in result["message"]
 
-    def test_destroy_gateway_with_targets_check(self, gateway_client):
-        """Test destroy_gateway checks for targets before deletion"""
+    def test_delete_gateway_with_targets_check(self, gateway_client):
+        """Test delete_gateway checks for targets before deletion"""
         mock_bedrock = Mock()
         gateway_client.client = mock_bedrock
         
@@ -448,7 +448,7 @@ class TestGatewayClient:
             "items": [{"targetId": "target-1"}]
         }
         
-        result = gateway_client.destroy_gateway(gateway_identifier="test-gateway")
+        result = gateway_client.delete_gateway(gateway_identifier="test-gateway")
         
         # Should check for targets first
         mock_bedrock.list_gateway_targets.assert_called_once_with(gatewayIdentifier="test-gateway")

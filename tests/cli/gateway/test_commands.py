@@ -307,27 +307,27 @@ class TestBedrockAgentCoreGatewayCLI:
     def test_destroy_command_flag_parsing(self):
         """Test destroy command uses updated --arn flag."""
         with patch("bedrock_agentcore_starter_toolkit.cli.gateway.commands.GatewayClient") as mock_client:
-            mock_client.return_value.destroy_gateway.return_value = {"status": "success"}
+            mock_client.return_value.delete_gateway.return_value = {"status": "success"}
             
             arn = "arn:aws:bedrock-agentcore:us-west-2:123:gateway/test"
-            result = self.runner.invoke(gateway_app, ["destroy", "--arn", arn])
+            result = self.runner.invoke(gateway_app, ["delete", "--arn", arn])
             
             assert result.exit_code == 0
-            mock_client.return_value.destroy_gateway.assert_called_with(
+            mock_client.return_value.delete_gateway.assert_called_with(
                 gateway_identifier=None, name=None, gateway_arn=arn
             )
 
     def test_target_commands_parameter_parsing(self):
         """Test target commands parse gateway and target parameters correctly."""
         with patch("bedrock_agentcore_starter_toolkit.cli.gateway.commands.GatewayClient") as mock_client:
-            mock_client.return_value.destroy_gateway_target.return_value = {"status": "success"}
+            mock_client.return_value.delete_gateway_target.return_value = {"status": "success"}
             
             result = self.runner.invoke(gateway_app, [
-                "destroy-target", "--id", "gateway-123", "--target-id", "target-456"
+                "delete-target", "--id", "gateway-123", "--target-id", "target-456"
             ])
             
             assert result.exit_code == 0
-            mock_client.return_value.destroy_gateway_target.assert_called_with(
+            mock_client.return_value.delete_gateway_target.assert_called_with(
                 gateway_identifier="gateway-123", name=None, gateway_arn=None,
                 target_id="target-456", target_name=None
             )

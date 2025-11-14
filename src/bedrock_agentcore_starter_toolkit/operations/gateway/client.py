@@ -238,7 +238,7 @@ class GatewayClient:
         except Exception as e:
             self.logger.warning("⚠️ IAM role update failed: %s. Continuing with best effort.", str(e))
 
-    def destroy_gateway(
+    def delete_gateway(
         self,
         gateway_identifier: Optional[str] = None,
         name: Optional[str] = None,
@@ -288,7 +288,7 @@ class GatewayClient:
             self.logger.error("Error deleting gateway: %s", str(e))
             return {"status": "error", "message": f"Error deleting gateway: {str(e)}"}
 
-    def destroy_gateway_target(
+    def delete_gateway_target(
         self,
         gateway_identifier: Optional[str] = None,
         name: Optional[str] = None,

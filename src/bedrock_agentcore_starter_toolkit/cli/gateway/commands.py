@@ -84,12 +84,12 @@ def create_mcp_gateway_target(
     console.print(target)
 
 
-@gateway_app.command(name="destroy")
-def destroy(
+@gateway_app.command(name="delete")
+def delete(
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID to delete"),
-    name: Optional[str] = typer.Option(None, help="Gateway name to delete (will look up ID)"),
-    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN to delete (will extract ID)"),
+    name: Optional[str] = typer.Option(None, help="Gateway name to delete"),
+    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN to delete"),
 ) -> None:
     """Deletes an MCP Gateway.
 
@@ -98,12 +98,12 @@ def destroy(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID to delete.
-    :param name: optional - the gateway name to delete (will look up ID).
-    :param gateway_arn: optional - the gateway ARN to delete (will extract ID).
+    :param name: optional - the gateway name to delete.
+    :param gateway_arn: optional - the gateway ARN to delete.
     :return:
     """
     client = GatewayClient(region_name=region)
-    result = client.destroy_gateway(
+    result = client.delete_gateway(
         gateway_identifier=gateway_identifier,
         name=name,
         gateway_arn=gateway_arn,
@@ -111,14 +111,14 @@ def destroy(
     console.print(result)
 
 
-@gateway_app.command(name="destroy-target")
-def destroy_target(
+@gateway_app.command(name="delete-target")
+def delete_target(
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
-    name: Optional[str] = typer.Option(None, help="Gateway name (will look up ID)"),
-    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN (will extract ID)"),
+    name: Optional[str] = typer.Option(None, help="Gateway name"),
+    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
     target_id: Optional[str] = typer.Option(None, "--target-id", help="Target ID to delete"),
-    target_name: Optional[str] = typer.Option(None, "--target-name", help="Target name to delete (will look up ID)"),
+    target_name: Optional[str] = typer.Option(None, "--target-name", help="Target name to delete"),
 ) -> None:
     """Deletes an MCP Gateway Target.
 
@@ -127,14 +127,14 @@ def destroy_target(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID.
-    :param name: optional - the gateway name (will look up ID).
-    :param gateway_arn: optional - the gateway ARN (will extract ID).
+    :param name: optional - the gateway name.
+    :param gateway_arn: optional - the gateway ARN.
     :param target_id: optional - the target ID to delete.
-    :param target_name: optional - the target name to delete (will look up ID).
+    :param target_name: optional - the target name to delete.
     :return:
     """
     client = GatewayClient(region_name=region)
-    result = client.destroy_gateway_target(
+    result = client.delete_gateway_target(
         gateway_identifier=gateway_identifier,
         name=name,
         gateway_arn=gateway_arn,
@@ -146,9 +146,9 @@ def destroy_target(
 
 @gateway_app.command(name="list")
 def list_gateways(
-    region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
+    region: str = typer.Option(None, help="AWS region to use"),
     name: Optional[str] = typer.Option(None, help="Filter by gateway name"),
-    max_results: int = typer.Option(50, "--max-results", "-m", help="Maximum number of results to return"),
+    max_results: int = typer.Option(50, "--max-results", "-m", help="Maximum number of results"),
 ) -> None:
     """Lists MCP Gateways.
 
@@ -156,7 +156,7 @@ def list_gateways(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param name: optional - filter by gateway name.
-    :param max_results: optional - maximum number of results (defaults to 50).
+    :param max_results: optional - maximum number of results (defaults to 50, min value of 1, max value of 1000).
     :return:
     """
     client = GatewayClient(region_name=region)
@@ -166,10 +166,10 @@ def list_gateways(
 
 @gateway_app.command(name="get")
 def get_gateway(
-    region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
+    region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
-    name: Optional[str] = typer.Option(None, help="Gateway name (will look up ID)"),
-    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN (will extract ID)"),
+    name: Optional[str] = typer.Option(None, help="Gateway name"),
+    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
 ) -> None:
     """Gets details for a specific MCP Gateway.
 
@@ -177,8 +177,8 @@ def get_gateway(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID.
-    :param name: optional - the gateway name (will look up ID).
-    :param gateway_arn: optional - the gateway ARN (will extract ID).
+    :param name: optional - the gateway name.
+    :param gateway_arn: optional - the gateway ARN.
     :return:
     """
     client = GatewayClient(region_name=region)
@@ -192,10 +192,10 @@ def get_gateway(
 
 @gateway_app.command(name="list-targets")
 def list_targets(
-    region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
+    region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
-    name: Optional[str] = typer.Option(None, help="Gateway name (will look up ID)"),
-    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN (will extract ID)"),
+    name: Optional[str] = typer.Option(None, help="Gateway name"),
+    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
     max_results: int = typer.Option(50, "--max-results", "-m", help="Maximum number of results to return"),
 ) -> None:
     """Lists targets for an MCP Gateway.
@@ -204,9 +204,9 @@ def list_targets(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID.
-    :param name: optional - the gateway name (will look up ID).
-    :param gateway_arn: optional - the gateway ARN (will extract ID).
-    :param max_results: optional - maximum number of results (defaults to 50).
+    :param name: optional - the gateway name.
+    :param gateway_arn: optional - the gateway ARN.
+    :param max_results: optional - maximum number of results (defaults to 50, min value of 1, max value of 1000).
     :return:
     """
     client = GatewayClient(region_name=region)
@@ -221,12 +221,12 @@ def list_targets(
 
 @gateway_app.command(name="get-target")
 def get_target(
-    region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
+    region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
-    name: Optional[str] = typer.Option(None, help="Gateway name (will look up ID)"),
-    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN (will extract ID)"),
+    name: Optional[str] = typer.Option(None, help="Gateway name "),
+    gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
     target_id: Optional[str] = typer.Option(None, "--target-id", help="Target ID"),
-    target_name: Optional[str] = typer.Option(None, "--target-name", help="Target name (will look up ID)"),
+    target_name: Optional[str] = typer.Option(None, "--target-name", help="Target name"),
 ) -> None:
     """Gets details for a specific Gateway Target.
 
@@ -235,10 +235,10 @@ def get_target(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param gateway_identifier: optional - the gateway ID.
-    :param name: optional - the gateway name (will look up ID).
-    :param gateway_arn: optional - the gateway ARN (will extract ID).
+    :param name: optional - the gateway name.
+    :param gateway_arn: optional - the gateway ARN.
     :param target_id: optional - the target ID.
-    :param target_name: optional - the target name (will look up ID).
+    :param target_name: optional - the target name.
     :return:
     """
     client = GatewayClient(region_name=region)
