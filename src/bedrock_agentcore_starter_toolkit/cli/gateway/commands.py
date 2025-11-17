@@ -156,7 +156,7 @@ def delete_target(
 def list_gateways(
     region: str = typer.Option(None, help="AWS region to use"),
     name: Optional[str] = typer.Option(None, help="Filter by gateway name"),
-    max_results: int = typer.Option(50, "--max-results", "-m", help="Maximum number of results"),
+    max_results: int = typer.Option(50, "--max-results", "-m", min=1, max=1000, help="Maximum number of results"),
 ) -> None:
     """Lists MCP Gateways.
 
@@ -164,7 +164,7 @@ def list_gateways(
 
     :param region: optional - region to use (defaults to us-west-2).
     :param name: optional - filter by gateway name.
-    :param max_results: optional - maximum number of results (defaults to 50, min value of 1, max value of 1000).
+    :param max_results: optional - maximum number of results (defaults to 50).
     :return:
     """
     client = GatewayClient(region_name=region)
@@ -204,7 +204,7 @@ def list_targets(
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name"),
     gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
-    max_results: int = typer.Option(50, "--max-results", "-m", help="Maximum number of results to return"),
+    max_results: int = typer.Option(50, "--max-results", "-m", min=1, max=1000, help="Maximum number of results to return"),
 ) -> None:
     """Lists targets for an MCP Gateway.
 
@@ -214,7 +214,7 @@ def list_targets(
     :param gateway_identifier: optional - the gateway ID.
     :param name: optional - the gateway name.
     :param gateway_arn: optional - the gateway ARN.
-    :param max_results: optional - maximum number of results (defaults to 50, min value of 1, max value of 1000).
+    :param max_results: optional - maximum number of results (defaults to 50).
     :return:
     """
     client = GatewayClient(region_name=region)
