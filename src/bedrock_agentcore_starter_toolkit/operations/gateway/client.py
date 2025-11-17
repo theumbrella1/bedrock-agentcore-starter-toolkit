@@ -282,10 +282,7 @@ class GatewayClient:
                     for target in targets:
                         target_id = target.get("targetId")
                         try:
-                            self.client.delete_gateway_target(
-                                gatewayIdentifier=resolved_id,
-                                targetId=target_id
-                            )
+                            self.client.delete_gateway_target(gatewayIdentifier=resolved_id, targetId=target_id)
                             self.logger.info("  ✓ Deleted target: %s", target_id)
                             deleted_targets.append(target_id)
                             time.sleep(2)  # Brief wait between deletions
@@ -294,9 +291,9 @@ class GatewayClient:
                             return {
                                 "status": "error",
                                 "message": f"Error deleting target {target_id}: {str(e)}",
-                                "deletedTargets": deleted_targets
+                                "deletedTargets": deleted_targets,
                             }
-                    
+
                     # Wait for all targets to be deleted
                     self.logger.info("  Waiting for targets to be fully deleted...")
                     time.sleep(5)

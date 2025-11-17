@@ -2973,8 +2973,6 @@ def test_get_or_create_memory_no_strategy_validation_when_none_provided():
         # Should not raise any validation error
 
 
-
-
 def test_region_fallback_to_session():
     """Test that region falls back to session region when not specified."""
     with patch("boto3.Session") as mock_session_class:

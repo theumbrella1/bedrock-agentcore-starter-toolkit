@@ -1,6 +1,5 @@
 """Unit tests for Memory CLI commands."""
 
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -232,7 +231,7 @@ def test_all_commands_accept_region_option(mock_memory_manager):
     mock_memory_manager.list_memories.return_value = []
     mock_memory_manager.get_memory_status.return_value = "ACTIVE"
 
-    for command_args, mock_method in commands_with_args:
+    for command_args, _mock_method in commands_with_args:
         result = runner.invoke(memory_app, command_args)
         # Should not fail due to region option
         assert result.exit_code == 0 or "Error" not in result.stdout

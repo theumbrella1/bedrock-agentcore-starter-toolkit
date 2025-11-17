@@ -1066,5 +1066,3 @@ class MemoryManager:
         namespaces = strategy_config.get("namespaces", [])
         for namespace in namespaces:
             self._validate_namespace(namespace)
-
-

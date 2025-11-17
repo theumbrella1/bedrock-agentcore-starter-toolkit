@@ -16,9 +16,15 @@ gateway_app = typer.Typer(help="Manage Bedrock AgentCore Gateways")
 def create_mcp_gateway(
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     name: Optional[str] = typer.Option(None, help="Name of the gateway (defaults to TestGateway)"),
-    role_arn: Optional[str] = typer.Option(None, "--role-arn", help="IAM role ARN to use (creates one if not provided)"),
-    authorizer_config: Optional[str] = typer.Option(None, "--authorizer-config", help="Serialized authorizer config JSON (creates one if not provided)"),
-    enable_semantic_search: Optional[bool] = typer.Option(True, "--enable_semantic_search", "-sem", help="Enable semantic search tool"),
+    role_arn: Optional[str] = typer.Option(
+        None, "--role-arn", help="IAM role ARN to use (creates one if not provided)"
+    ),
+    authorizer_config: Optional[str] = typer.Option(
+        None, "--authorizer-config", help="Serialized authorizer config JSON (creates one if not provided)"
+    ),
+    enable_semantic_search: Optional[bool] = typer.Option(
+        True, "--enable_semantic_search", "-sem", help="Enable semantic search tool"
+    ),
 ) -> None:
     """Creates an MCP Gateway.
 
@@ -44,9 +50,17 @@ def create_mcp_gateway_target(
     role_arn: str = typer.Option(None, "--role-arn", help="IAM role ARN of the created gateway (required)"),
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     name: Optional[str] = typer.Option(None, help="Name of the target (defaults to TestGatewayTarget)"),
-    target_type: Optional[str] = typer.Option(None, "--target-type", help="Type of target: 'lambda', 'openApiSchema', or 'smithyModel' (defaults to 'lambda')"),
-    target_payload: Optional[str] = typer.Option(None, "--target-payload", help="Target specification JSON (required for openApiSchema targets)"),
-    credentials: Optional[str] = typer.Option(None, help="Credentials JSON for target access (API key or OAuth2, for openApiSchema targets)"),
+    target_type: Optional[str] = typer.Option(
+        None,
+        "--target-type",
+        help="Type of target: 'lambda', 'openApiSchema', or 'smithyModel' (defaults to 'lambda')",
+    ),
+    target_payload: Optional[str] = typer.Option(
+        None, "--target-payload", help="Target specification JSON (required for openApiSchema targets)"
+    ),
+    credentials: Optional[str] = typer.Option(
+        None, help="Credentials JSON for target access (API key or OAuth2, for openApiSchema targets)"
+    ),
 ) -> None:
     """Creates an MCP Gateway Target.
 
@@ -111,11 +125,11 @@ def delete(
         gateway_arn=gateway_arn,
         skip_resource_in_use=force,
     )
-    
+
     # Enhance error message to suggest --force flag
     if result.get("status") == "error" and "target(s)" in result.get("message", ""):
         result["message"] = f"{result['message']} Use --force to delete the gateway and all its targets."
-    
+
     console.print(result)
 
 
@@ -204,7 +218,9 @@ def list_targets(
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name"),
     gateway_arn: Optional[str] = typer.Option(None, "--arn", help="Gateway ARN"),
-    max_results: int = typer.Option(50, "--max-results", "-m", min=1, max=1000, help="Maximum number of results to return"),
+    max_results: int = typer.Option(
+        50, "--max-results", "-m", min=1, max=1000, help="Maximum number of results to return"
+    ),
 ) -> None:
     """Lists targets for an MCP Gateway.
 

@@ -23,7 +23,7 @@ def create(
         None,
         "--strategies",
         "-s",
-        help="JSON string of memory strategies (e.g., '[{\"semanticMemoryStrategy\": {\"name\": \"Facts\"}}]')",
+        help='JSON string of memory strategies (e.g., \'[{"semanticMemoryStrategy": {"name": "Facts"}}]\')',
     ),
     memory_execution_role_arn: Optional[str] = typer.Option(
         None, "--role-arn", help="IAM role ARN for memory execution"
@@ -35,7 +35,6 @@ def create(
     """Create a new memory resource.
 
     Examples:
-
         # Create basic memory (STM only)
         agentcore memory create my_agent_memory
 
@@ -51,7 +50,7 @@ def create(
                 parsed_strategies = json.loads(strategies)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error parsing strategies JSON: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         console.print(f"[cyan]Creating memory: {name}...[/cyan]")
 
@@ -75,14 +74,14 @@ def create(
                 encryption_key_arn=encryption_key_arn,
             )
 
-        console.print(f"[green]✓ Memory created successfully![/green]")
+        console.print("[green]✓ Memory created successfully![/green]")
         console.print(f"[bold]Memory ID:[/bold] {memory.id}")
         console.print(f"[bold]Status:[/bold] {memory.status}")
         console.print(f"[bold]Region:[/bold] {manager.region_name or 'default'}")
 
     except Exception as e:
         console.print(f"[red]Error creating memory: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @memory_app.command()
@@ -99,7 +98,7 @@ def get(
         manager = MemoryManager(region_name=region, console=console)
         memory = manager.get_memory(memory_id)
 
-        console.print(f"\n[bold cyan]Memory Details:[/bold cyan]")
+        console.print("\n[bold cyan]Memory Details:[/bold cyan]")
         console.print(f"[bold]ID:[/bold] {memory.id}")
         console.print(f"[bold]Name:[/bold] {memory.name}")
         console.print(f"[bold]Status:[/bold] {memory.status}")
@@ -113,7 +112,7 @@ def get(
 
     except Exception as e:
         console.print(f"[red]Error getting memory: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @memory_app.command()
@@ -152,7 +151,7 @@ def list(
 
     except Exception as e:
         console.print(f"[red]Error listing memories: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @memory_app.command()
@@ -177,11 +176,11 @@ def delete(
         else:
             manager.delete_memory(memory_id)
 
-        console.print(f"[green]✓ Memory deleted successfully![/green]")
+        console.print("[green]✓ Memory deleted successfully![/green]")
 
     except Exception as e:
         console.print(f"[red]Error deleting memory: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @memory_app.command()
@@ -203,7 +202,7 @@ def status(
 
     except Exception as e:
         console.print(f"[red]Error getting status: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 if __name__ == "__main__":
