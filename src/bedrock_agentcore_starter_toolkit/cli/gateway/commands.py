@@ -53,7 +53,7 @@ def create_mcp_gateway_target(
     target_type: Optional[str] = typer.Option(
         None,
         "--target-type",
-        help="Type of target: 'lambda', 'openApiSchema', or 'smithyModel' (defaults to 'lambda')",
+        help="Type of target: 'lambda', 'openApiSchema', 'mcpServer', or 'smithyModel' (defaults to 'lambda')",
     ),
     target_payload: Optional[str] = typer.Option(
         None, "--target-payload", help="Target specification JSON (required for openApiSchema targets)"
@@ -70,7 +70,7 @@ def create_mcp_gateway_target(
     :param region: optional - the region to use, defaults to us-west-2
     :param name: optional - the name of the target (defaults to TestGatewayTarget).
     :param target_type: optional - the type of the target e.g. one of "lambda" |
-                        "openApiSchema" | "smithyModel" (defaults to "lambda").
+                        "openApiSchema" | "mcpServer" | "smithyModel" (defaults to "lambda").
     :param target_payload: only required for openApiSchema target - the specification of that target.
     :param credentials: only use with openApiSchema target - the credentials for calling this target
                         (api key or oauth2).
@@ -98,8 +98,8 @@ def create_mcp_gateway_target(
     console.print(target)
 
 
-@gateway_app.command(name="delete")
-def delete(
+@gateway_app.command(name="delete-mcp-gateway")
+def delete_mcp_gateway(
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID to delete"),
     name: Optional[str] = typer.Option(None, help="Gateway name to delete"),
@@ -133,8 +133,8 @@ def delete(
     console.print(result)
 
 
-@gateway_app.command(name="delete-target")
-def delete_target(
+@gateway_app.command(name="delete-mcp-gateway-target")
+def delete_mcp_gateway_target(
     region: str = typer.Option(None, help="AWS region to use (defaults to us-west-2)"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name"),
@@ -166,8 +166,8 @@ def delete_target(
     console.print(result)
 
 
-@gateway_app.command(name="list")
-def list_gateways(
+@gateway_app.command(name="list-mcp-gateways")
+def list_mcp_gateways(
     region: str = typer.Option(None, help="AWS region to use"),
     name: Optional[str] = typer.Option(None, help="Filter by gateway name"),
     max_results: int = typer.Option(50, "--max-results", "-m", min=1, max=1000, help="Maximum number of results"),
@@ -186,8 +186,8 @@ def list_gateways(
     console.print(result)
 
 
-@gateway_app.command(name="get")
-def get_gateway(
+@gateway_app.command(name="get-mcp-gateway")
+def get_mcp_gateway(
     region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name"),
@@ -212,8 +212,8 @@ def get_gateway(
     console.print(result)
 
 
-@gateway_app.command(name="list-targets")
-def list_targets(
+@gateway_app.command(name="list-mcp-gateway-targets")
+def list_mcp_gateway_targets(
     region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name"),
@@ -243,8 +243,8 @@ def list_targets(
     console.print(result)
 
 
-@gateway_app.command(name="get-target")
-def get_target(
+@gateway_app.command(name="get-mcp-gateway-target")
+def get_mcp_gateway_target(
     region: str = typer.Option(None, help="AWS region to use"),
     gateway_identifier: Optional[str] = typer.Option(None, "--id", help="Gateway ID"),
     name: Optional[str] = typer.Option(None, help="Gateway name "),
